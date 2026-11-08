@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecqad-uav-baseline"
+version = "0.1.0"
+description = "Conventional fixed-wing 6-DoF GNC baseline for EC-QAD research"
+requires-python = ">=3.10"
+dependencies = [
+  "jsbsim>=1.3.3",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "pandas>=2.1",
+  "matplotlib>=3.8",
+  "PyYAML>=6.0",
+  "filterpy>=1.4.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

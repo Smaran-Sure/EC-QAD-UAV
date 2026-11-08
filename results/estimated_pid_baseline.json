@@ -1,0 +1,65 @@
+{
+  "metrics": {
+    "altitude_rmse_m": 4.251670137437543,
+    "altitude_peak_abs_m": 29.968037726712282,
+    "heading_rmse_deg": 4.9391693106620975,
+    "heading_peak_abs_deg": 38.16430762496223,
+    "airspeed_rmse_mps": 0.7425793505008942,
+    "est_pn_rmse_m": 1.8282372563198996,
+    "est_pe_rmse_m": 0.22952401163417868,
+    "est_pd_rmse_m": 0.3064284552857242,
+    "est_roll_rmse_deg": 0.13260152224566424,
+    "est_pitch_rmse_deg": 0.14359862741128243,
+    "est_yaw_rmse_deg": 0.1707959905350898,
+    "nis_gps_fraction_below_95": 0.9478357380688124,
+    "nis_heading_fraction_below_95": 0.9566787003610109,
+    "nis_airspeed_fraction_below_95": 0.9580672035545682
+  },
+  "metadata": {
+    "control_mode": "estimated_pid",
+    "estimator_enabled": true,
+    "duration_s": 180.0,
+    "plant_hz": 200.0,
+    "aircraft_model": "Rascal110",
+    "initialization": {
+      "trim_ok": false,
+      "trim_error": null,
+      "model": "Rascal110",
+      "model_root": "/Users/kumarisure/Repos/EC-QAD-UAV/models/jsbsim",
+      "trim_command": {
+        "aileron": 0.025,
+        "elevator": -0.025,
+        "rudder": 0.0,
+        "throttle": 0.36
+      },
+      "initial_truth": {
+        "t": 0.0,
+        "pn_m": 0.0,
+        "pe_m": 0.0,
+        "pd_m": -0.0,
+        "vn_mps": 25.363219980178773,
+        "ve_mps": 0.0,
+        "vd_mps": -5.631766160125456e-15,
+        "u_mps": 25.363219980178773,
+        "v_mps": 0.0,
+        "w_mps": 0.0,
+        "roll_rad": 0.0,
+        "pitch_rad": 2.220446049250313e-16,
+        "yaw_rad": 0.0,
+        "p_rad_s": 0.0,
+        "q_rad_s": 0.0,
+        "r_rad_s": 0.0,
+        "altitude_m": 300.00000000084935,
+        "airspeed_mps": 25.363219980178776,
+        "lat_rad": 0.0,
+        "lon_rad": 0.0
+      }
+    },
+    "trim": {
+      "aileron": 0.025,
+      "elevator": -0.025,
+      "rudder": 0.0,
+      "throttle": 0.36
+    }
+  }
+}

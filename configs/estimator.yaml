@@ -1,0 +1,20 @@
+ukf:
+  alpha: 0.15
+  beta: 2.0
+  kappa: 0.0
+
+initial_std:
+  position_m: 5.0
+  velocity_mps: 1.0
+  attitude_deg: 5.0
+  gyro_bias_deg_s: 0.20
+  accel_bias_mps2: 0.20
+
+process_std:
+  position_m_sqrt_s: 0.05
+  velocity_mps_sqrt_s: 0.30
+  attitude_deg_sqrt_s: 0.20
+  gyro_bias_deg_s_sqrt_s: 0.005
+  accel_bias_mps2_sqrt_s: 0.01
+
+nis_alpha: 0.95

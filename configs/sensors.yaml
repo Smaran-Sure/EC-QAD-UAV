@@ -1,0 +1,19 @@
+seed: 7
+rates_hz:
+  imu: 100.0
+  gps: 5.0
+  magnetometer: 20.0
+  airspeed: 20.0
+
+noise_std:
+  gyro_deg_s: 0.10
+  accel_mps2: 0.05
+  gps_position_m: [1.5, 1.5, 2.5]
+  gps_velocity_mps: [0.10, 0.10, 0.15]
+  heading_deg: 1.0
+  airspeed_mps: 0.30
+
+initial_bias_std:
+  gyro_deg_s: 0.03
+  accel_mps2: 0.02
+  airspeed_mps: 0.05

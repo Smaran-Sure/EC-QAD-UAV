@@ -1,0 +1,26 @@
+aircraft:
+  # Loaded from models/jsbsim by default. JSBSIM_ROOT can override the data root;
+  # installed stock data remains available for smoke-test fallback.
+  model: Rascal110
+  fallback_model: c172p
+  allow_fallback_for_smoke_test: true
+
+simulation:
+  plant_hz: 200.0
+  duration_s: 180.0
+  initial:
+    altitude_m: 300.0
+    calibrated_airspeed_mps: 25.0
+    heading_deg: 0.0
+    flight_path_deg: 0.0
+  # The simple-trim request uses JSBSim's simulation/do_simple_trim property.
+  trim_before_run: false
+  engine_running: false
+  motor_startup_ramp_s: 2.0
+
+controls:
+  trim:
+    aileron: 0.025
+    elevator: -0.025
+    rudder: 0.0
+    throttle: 0.36

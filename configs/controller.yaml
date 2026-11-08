@@ -1,0 +1,33 @@
+controller_hz: 50.0
+limits:
+  max_roll_cmd_deg: 30.0
+  max_pitch_cmd_deg: 12.0
+  aileron: [-1.0, 1.0]
+  elevator: [-1.0, 1.0]
+  rudder: [-1.0, 1.0]
+  throttle: [0.0, 1.0]
+
+# Starting gains. Tune in experiments/05_truth_control.py before paper experiments.
+pid:
+  roll:
+    kp: 1.8
+    ki: 0.10
+    kd: 0.35
+  pitch:
+    kp: -1.5
+    ki: -0.08
+    kd: -0.30
+  heading:
+    kp: 0.9
+    ki: 0.02
+    kd: 0.08
+  altitude:
+    kp: 0.025
+    ki: 0.001
+    kd: 0.010
+  airspeed:
+    kp: 0.08
+    ki: 0.015
+    kd: 0.01
+  yaw_damper:
+    kr: 0.25
