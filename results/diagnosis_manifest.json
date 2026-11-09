@@ -15,10 +15,23 @@
     "configs/study.yaml": "cb3bed040119b591ee72410870ab85d53c39066e0c9a6937654153a18ec05886",
     "docs/EXPERIMENT_DESIGN.md": "829be7c1a7e6b8c28760edbfe30fd80563a011fd169b25b752f6fbee3f899ad2",
     "src/ecqad_uav/learning/policy.py": "4556c9b0167cb041aa4433d36186c60847413b11143b4812674f34238a728f33",
-    "src/ecqad_uav/plots/study_report.py": "2474bd1800250db992c598e4d105c5347ee3dcdfa98913f1c0b2d46e96bb04fe",
+    "src/ecqad_uav/plots/study_report.py": "a734e605b5278b7201155a16a3ac2ccab8360230343b66a215642dd436bd6b46",
     "experiments/run_study.py": "92fe73aa2529d23cc0bb6138ece5cf73bcd3f6b1b4f398bb89afe8c410d7f19a",
     "results/checkpoints/seed19/covariance_shuffled_4.pt": "689f187745dee931d4c77a24e6d6e38f77d907f428e24a23975ecb2c212a6baa",
     "results/checkpoints/seed43/covariance_shuffled_4.pt": "28d3980dd70901413357b368926e5ce210ac4d871e3f6ca3549a40c2fb88e27b",
     "results/checkpoints/seed7/covariance_shuffled_4.pt": "227ced6e0c2ba04109a1029a8e863aec487452e1e2c97e5c2a83b999fc693941"
+  },
+  "completed_rollouts": 3280,
+  "result_sha256": {
+    "results/per_episode_metrics.csv": "01013cfcb1b112883a0c2a3146ab39fca6e047524eee5a9c9f8ff56900de7e84",
+    "results/signal_analysis.csv": "a36c4f29a4b21180793f8b1fb977ea8d50b124fa1a40f4458ea0e52740d3b0f6",
+    "results/definitive_preliminary_table.csv": "aee0addf827d3519b115189db5dee200e4ee0098518cc441901e6d15c0bae1ee",
+    "results/study_audit.json": "bb11899f29f18a56977b9e00ffb5776673700645965ff3672f8b4f724b0a4c4b"
+  },
+  "validation": {
+    "pytest_passed": 18,
+    "grid_complete": true,
+    "frozen_artifacts_unchanged": 89,
+    "report_exit_code": 0
   }
 }

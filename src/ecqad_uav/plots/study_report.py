@@ -235,20 +235,28 @@ def report(*, write_docs=True):
     pd.DataFrame(pairs).to_csv(OUT/'paired_comparisons.csv',index=False)
     d.groupby(['training_seed','method','bits','regime'])[cols].mean().reset_index().to_csv(OUT/'per_seed_comparisons.csv',index=False)
     ab=d[d.bits==4].groupby(['method','regime'])[cols].mean().reset_index(); ab.to_csv(OUT/'ecqad_ablation.csv',index=False)
-    fig,ax=plt.subplots(figsize=(8,3)); b=ab.pivot(index='method',columns='regime',values='tracking_score'); b.plot.bar(ax=ax,rot=25); ax.set_ylabel('Normalized tracking score'); ax.set_xlabel(''); save(fig,'ablation_comparison')
+    fig,ax=plt.subplots(figsize=(11,4))
+    b=ab.pivot(index='method',columns='regime',values='tracking_score')
+    seed_stats=d[d.bits==4].groupby(['method','regime','training_seed']).tracking_score.mean().groupby(['method','regime']).agg(['std','count'])
+    se=(seed_stats['std']/np.sqrt(seed_stats['count'])).unstack('regime').reindex(b.index).fillna(0.)
+    labels=[DISPLAY_NAMES.get(v,v) for v in b.index];b.index=labels;se.index=labels
+    b.plot.bar(ax=ax,rot=30,yerr=se,capsize=2);ax.tick_params(axis='x',labelsize=7)
+    ax.set_title('SE across student-seed means' if d.training_seed.nunique()>1 else 'One student seed; across-seed uncertainty not estimated',fontsize=9)
+    ax.set_ylabel('Normalized tracking score');ax.set_xlabel('');save(fig,'ablation_comparison')
     fig,axes=plt.subplots(3,1,figsize=(7,6),sharex=True)
     for method,bits in [('teacher',32),('uniform',4),('ecqad',4)]:
         files=sorted((OUT/'traces').glob(f'{method}_{bits}_seed{int(d.training_seed.min())}_gps_dropout_000.npz'))
         if not files:continue
         t,_=trace(files[0])
         for ax,state,ref,scale,label in zip(axes,['altitude_m','yaw_rad','airspeed_mps'],['altitude_m','heading_rad','airspeed_mps'],[1,180/np.pi,1],['Altitude (m)','Heading (deg)','Airspeed (m/s)']):
-            ax.plot(t.time_s,t['truth_'+state]*scale,lw=.9,label=method); ax.set_ylabel(label)
+            ax.plot(t.time_s,t['truth_'+state]*scale,lw=.9,label=DISPLAY_NAMES[method]); ax.set_ylabel(label)
             if method=='teacher':ax.plot(t.time_s,t['cmd_'+ref]*scale,'k--',lw=.7,label='Reference')
     axes[0].legend(ncol=4); axes[-1].set_xlabel('Time (s)'); save(fig,'closed_loop_comparison')
     if write_docs:
         write_results_docs(d)
         weighting_diagnosis()
         research_package(d)
+        study_audit(d)
     print(summary.to_string())
 
 
@@ -283,7 +291,7 @@ def write_results_docs(d):
                 matched=paired[['ecqad',baseline]].dropna()
                 if len(matched):
                     change=100*(matched.ecqad.mean()/matched[baseline].mean()-1)
-                    ablation_lines.append(f'Against {baseline}, 4-bit off-nominal EC-QAD-v1 combined score changed by {change:+.2f}% on {len(matched)} matched rollouts (negative favors EC-QAD).')
+                    ablation_lines.append(f'Against {baseline}, 4-bit off-nominal EC-QAD-v1 combined score changed by {change:+.2f}% on {len(matched)} matched rollouts (negative favors EC-QAD-v1).')
     ablation_text=' '.join(ablation_lines) if ablation_lines else 'Additional weighting controls have not yet completed evaluation.'
     ablation_text+=' These are descriptive paired contrasts; the per-seed table must also be examined. If shuffled or generic balancing/sensitivity performs as well, superiority to uniform QAD alone is not estimator-specific evidence.'
     seeds=sorted(d.training_seed.unique().astype(int).tolist())
@@ -340,61 +348,6 @@ PDF versions are available alongside each PNG. Machine-readable raw and summary 
 {limitations}
 '''
     (ROOT/'docs/INITIAL_RESULTS.md').write_text(text)
-    abstract=f'We evaluated estimator-conditioned quantization-aware distillation in a nonlinear six-degree-of-freedom fixed-wing simulation with simulated sensors and a navigation UKF. Across {complete} executed closed-loop rollouts and training seeds {seeds}, '+effect_text+' '+strongest_text+' These results characterize this bounded weighting formulation; they do not establish general robustness or hardware efficiency.'
-    paper=f'''# AIAA AVIATION research summary
-
-## 1. Problem
-
-Low-bit policy approximation can alter closed-loop UAV tracking. A state estimator supplies physical uncertainty and consistency information that could identify where preserving teacher fidelity matters most.
-
-## 2. Literature gap and scope
-
-Quantized policies, quantization-aware policy distillation, uncertainty-aware distillation and importance-weighted losses already exist. [QuaRL](https://research.google/pubs/quantized-reinforcement-learning-quarl/) studies policy quantization. [SQIL (Park et al., ICCV 2025)](https://openaccess.thecvf.com/content/ICCV2025/papers/Park_Saliency-Aware_Quantized_Imitation_Learning_for_Efficient_Robotic_Control_ICCV_2025_paper.pdf) combines quantization-aware imitation and saliency-weighted action distillation. [Logit-uncertainty distillation](https://pmc.ncbi.nlm.nih.gov/articles/PMC11682123/) is another existing uncertainty-weighting example. These sources support a narrow positioning, not a universal priority claim: this study tests covariance and innovation statistics from a physical flight-state estimator as compression-training importance signals. The literature review is targeted, not exhaustive. The implemented Jacobian comparator is sensitivity-inspired and is not presented as a reproduction of SQIL.
-
-## 3. Research question
-
-H1: do estimator signals predict compression-related action error or subsequent tracking degradation beyond fault labels and policy sensitivity? H2: does using those signals as bounded distillation weights improve a low-bit policy? These hypotheses are tested separately.
-
-## 4. EC-QAD algorithm
-
-Dimensionless selected-covariance and normalized-NIS summaries are standardized using training data, combined, exponentiated with a population-normalizing offset, and clipped to [0.5,2]. Their training-population mean is one. The student minimizes weighted teacher-action MSE. Covariance/NIS do not become deployed student inputs. Teacher and student share a physical-navigation/reference interface with no PID internal state or computation. Fixed bit width redistributes training emphasis; it does not allocate bits dynamically.
-
-## 5. Experimental setup
-
-JSBSim Rascal110, simulated IMU/GPS/heading/airspeed, 15-state UKF, cascaded PID expert, 16→32→32→4 MLP teacher/student, 8/4/2-bit affine weight and hidden-activation fake quantization. Whole trajectory splits hold out stronger faults and later onsets. Nominal, gyro-bias, GPS-dropout and airspeed-bias episodes use common random numbers across methods. {complete} rollouts and training seeds {seeds} are represented in the current results. Exact parameters are in METHOD.md and EXPERIMENT_DESIGN.md.
-
-## 6. Initial quantitative findings
-
-{effect_text}
-
-{strongest_text}
-
-{conditional}
-
-{ablation_text}
-
-The full physical-metric table, failure counts, ablations and paired comparisons are in INITIAL_RESULTS.md and machine-readable results tables.
-
-## 7. Defensible contribution
-
-A reproducible estimator-to-compression training interface, an explicit bounded mean-one algorithm, and executed fixed-wing evidence testing both signal information and weighting efficacy. Improvements, null effects and low-bit failures are outcomes to report. Estimator-specific advantage requires beating shuffled/fault-balanced/sensitivity comparators, not merely uniform QAD.
-
-## 8. Limitations
-
-{limitations}
-
-## 9. Candidate introduction contributions
-
-- A training-only interface connecting physical navigation covariance and innovation consistency to quantized-policy fidelity weighting.
-- An interpretable, dimensionless, bounded, mean-normalized distillation algorithm with unchanged deployed policy inputs.
-- A reproducible 6-DoF fixed-wing benchmark with whole-trajectory held-out sensor faults and degraded observability.
-- Separate empirical tests of incremental signal information and the closed-loop benefit of weighting, including negative outcomes and matched controls.
-
-## 10. Draft abstract results paragraph
-
-{abstract}
-'''
-    (ROOT/'docs/AIAA_AVIATION_SUMMARY.md').write_text(paper)
 
 
 def refresh_training_records():
@@ -474,6 +427,16 @@ def weighting_diagnosis():
     for name in names:
         vals=selected[selected.group==name].set_index('method')['mean'];lines.append(f'| {name} | {vals["covariance"]:.5f} | {vals["innovation"]:.5f} | {vals["ecqad"]:.5f} |')
     variances=np.var(.25*clipped,axis=0)
+    executed=pd.read_csv(OUT/'per_episode_metrics.csv')
+    executed=executed[executed.bits==4].copy()
+    executed['regime']=np.where(executed.condition=='nominal','nominal','off_nominal')
+    control=executed.groupby(['training_seed','method','regime']).tracking_score.mean().unstack('regime').reset_index()
+    training=pd.read_csv(OUT/'training_runs.csv');training=training[training.bits==4]
+    joined=control.merge(training[['training_seed','method','validation_action_mse']],on=['training_seed','method'])
+    joined.to_csv(OUT/'distillation_vs_control.csv',index=False)
+    fidelity=['| Student seed | Method | Validation action MSE | Nominal score | Off-nominal score |','|---:|---|---:|---:|---:|']
+    for r in joined[joined.method.isin(['uniform','covariance','innovation','ecqad'])].itertuples():
+        fidelity.append(f'| {r.training_seed} | {DISPLAY_NAMES[r.method]} | {r.validation_action_mse:.7f} | {r.nominal:.4f} | {r.off_nominal:.4f} |')
     text=f'''# EC-QAD-v1 diagnosis
 
 This is a read-only analysis of {len(d)} logged training samples from 32 complete trajectories. The deployed physical-reference interface, teacher, quantizer, and existing weighting algorithms remain frozen. Existing `ecqad` identifiers mean **EC-QAD-v1 combined**. Negative results are preserved under `results/frozen_ecqad_v1/` and in the episode tables.
@@ -499,6 +462,12 @@ Complete marginal quantiles, scenario-wide distributions, active-fault distribut
 - NIS is available only at measurement updates. The implementation holds each sensor's previous EWMA between updates and averages all three values. During active GPS dropout, {gps.gps_no_update_pct:.3f}% of logged samples have no new GPS innovation; the mean/max age of the last GPS statistic is {gps.gps_age_mean_s:.3f}/{gps.gps_age_max_s:.3f} seconds. Heading/airspeed updates may still change the composite. Missing GPS is therefore not represented by a fresh GPS inconsistency statistic or an availability gate.
 - Alpha=0.1 corresponds to an EWMA e-folding time of {-1/(5*np.log(.9)):.3f} s at the nominal 5 Hz GPS rate and {-1/(20*np.log(.9)):.3f} s at 20 Hz heading/airspeed rates. Measurement loss extends the GPS hold beyond that nominal time scale. Covariance propagates during loss; NIS describes consistency of received measurements. They measure different physical phenomena.
 - Population mean-one normalization is enforced, while each fault-state mean can differ, as the table shows. Mean-one does not make gradients identical or guarantee stable low-bit closed-loop control.
+
+## Offline fidelity versus closed-loop control
+
+{chr(10).join(fidelity)}
+
+These are the same frozen checkpoints and executed rollouts, joined by student seed and method. `results/distillation_vs_control.csv` contains all evaluated four-bit controls. Validation action MSE selects the checkpoint using separate expert trajectories; it is not a closed-loop stability criterion. In the original seed-7 comparison, combined EC-QAD-v1 has lower validation action MSE than uniform QAD yet much worse closed-loop tracking. Covariance-only has higher validation MSE than uniform but better closed-loop tracking. Thus poorer average offline fidelity alone does not explain the ordering. The data establish a mismatch between the scalar selection metric and closed-loop consequences, not a causal account of which action errors destabilize flight. No checkpoint has been reselected using evaluation outcomes.
 
 ## Causal limits and algorithm decision
 
@@ -554,7 +523,7 @@ def research_package(d):
         if q.empty:return 'Pending matched evaluation.'
         r=q.iloc[0];consistent=r.seeds_covariance_better==r.seeds and r.ci025_pct>0
         prefix='Supported within this experiment' if consistent else 'Consistent superiority is not established'
-        return f'{prefix}: covariance-only has {r.improvement_pct:+.2f}% mean off-nominal improvement (95% paired bootstrap interval [{r.ci025_pct:+.2f}, {r.ci975_pct:+.2f}]%); it improves the per-seed mean in {int(r.seeds_covariance_better)}/{int(r.seeds)} student seeds.'
+        return f'{prefix}: covariance-only has {r.improvement_pct:+.2f}% mean off-nominal improvement relative to {DISPLAY_NAMES[comparator]} (95% paired bootstrap interval [{r.ci025_pct:+.2f}, {r.ci975_pct:+.2f}]%); it improves the per-seed mean in {int(r.seeds_covariance_better)}/{int(r.seeds)} student seeds.'
     four=table[table.bits==4].set_index('method')
     main=four.loc['ecqad'] if 'ecqad' in four.index else None
     uniform=four.loc['uniform'] if 'uniform' in four.index else None
@@ -666,3 +635,36 @@ Approximate public BETA aircraft aerodynamics, synthetic still-air sensor scenar
 {abstract}
 '''
     (ROOT/'docs/AIAA_AVIATION_SUMMARY.md').write_text(paper)
+
+
+def study_audit(d, *, verify_frozen=False):
+    """Check scope, paired scenarios, frozen artifacts, and deployment isolation."""
+    import hashlib,ast,subprocess
+    cfg=load_yaml('study.yaml');keys=['training_seed','method','bits','condition','episode']
+    assert not d.duplicated(keys).any(),'Duplicate evaluation identities'
+    assert set(d.policy_input_schema)=={'physical_reference_v2'}
+    assert not d.loc[d.method!='pid','pid_executed'].any(),'PID executed in a neural deployment'
+    paired=['episode_seed','severity','onset_s','duration_s','reference_scale','reference_time_scale','gyro_axis']
+    distinct=d.groupby(['condition','episode'])[paired].nunique(dropna=False)
+    assert (distinct<=1).all().all(),'Scenario covariates differ between paired methods'
+    models=[(s,m,b) for s in cfg['training_seeds'] for b in cfg['bits'] for m in cfg['methods'] if m in ['uniform','ecqad'] or b==4]
+    models += [(cfg['teacher_seed'],'teacher',32),(7,'pid',32)]
+    expected={(s,m,b,c,e) for s,m,b in models for c in cfg['conditions'] for e in range(cfg['evaluation_episodes_per_condition'])}
+    actual=set(d[keys].itertuples(index=False,name=None));missing=sorted(expected-actual)
+    frozen={}
+    if verify_frozen:
+        manifest=json.loads((ROOT/'results/frozen_ecqad_v1/study_manifest.json').read_text())
+        frozen={p:h for p,h in manifest['sha256'].items() if p.startswith(('results/checkpoints/','results/data/','models/jsbsim/'))}
+        changed=[p for p,h in frozen.items() if hashlib.sha256((ROOT/p).read_bytes()).hexdigest()!=h]
+        assert not changed,changed
+        runtime=['src/ecqad_uav/control/autopilot.py','src/ecqad_uav/sim/runner.py']
+        assert all(hashlib.sha256((ROOT/p).read_bytes()).hexdigest()==manifest['sha256'][p] for p in runtime)
+        policy_path='src/ecqad_uav/learning/policy.py'
+        before=subprocess.check_output(['git','show',manifest['git_head']+':'+policy_path],cwd=ROOT,text=True)
+        def policy_class(source):return ast.dump(next(n for n in ast.parse(source).body if isinstance(n,ast.ClassDef) and n.name=='Policy'),include_attributes=False)
+        assert policy_class(before)==policy_class((ROOT/policy_path).read_text()),'Deployed Policy class changed after freeze'
+    record=dict(expected_rollouts=len(expected),actual_rollouts=len(d),missing_required_rollouts=len(missing),complete=not missing,
+        unique_scenarios=int(d[['condition','episode']].drop_duplicates().shape[0]),student_training_seeds=cfg['training_seeds'],teacher_seed=cfg['teacher_seed'],
+        duplicate_keys=0,paired_scenarios_identical=True,neural_pid_execution=False,frozen_preservation_checked=verify_frozen,
+        policy_interface_and_class_unchanged=True if verify_frozen else None,unchanged_frozen_artifacts=len(frozen),missing_examples=missing[:20])
+    (OUT/'study_audit.json').write_text(json.dumps(record,indent=2))

@@ -29,6 +29,25 @@ Complete marginal quantiles, scenario-wide distributions, active-fault distribut
 - Alpha=0.1 corresponds to an EWMA e-folding time of 1.898 s at the nominal 5 Hz GPS rate and 0.475 s at 20 Hz heading/airspeed rates. Measurement loss extends the GPS hold beyond that nominal time scale. Covariance propagates during loss; NIS describes consistency of received measurements. They measure different physical phenomena.
 - Population mean-one normalization is enforced, while each fault-state mean can differ, as the table shows. Mean-one does not make gradients identical or guarantee stable low-bit closed-loop control.
 
+## Offline fidelity versus closed-loop control
+
+| Student seed | Method | Validation action MSE | Nominal score | Off-nominal score |
+|---:|---|---:|---:|---:|
+| 7 | Covariance-only EC-QAD | 0.0012040 | 0.2827 | 0.3124 |
+| 7 | EC-QAD-v1 combined | 0.0011125 | 3.4403 | 3.2953 |
+| 7 | Innovation-only EC-QAD | 0.0011718 | 0.3064 | 0.3316 |
+| 7 | Uniform QAD | 0.0011563 | 0.3043 | 0.4083 |
+| 19 | Covariance-only EC-QAD | 0.0011970 | 0.2594 | 0.2960 |
+| 19 | EC-QAD-v1 combined | 0.0012257 | 0.2880 | 0.3103 |
+| 19 | Innovation-only EC-QAD | 0.0011839 | 0.2841 | 0.3081 |
+| 19 | Uniform QAD | 0.0012564 | 0.3804 | 0.4441 |
+| 43 | Covariance-only EC-QAD | 0.0010682 | 0.3623 | 0.3615 |
+| 43 | EC-QAD-v1 combined | 0.0012264 | 0.4081 | 0.4290 |
+| 43 | Innovation-only EC-QAD | 0.0011466 | 0.3629 | 0.4826 |
+| 43 | Uniform QAD | 0.0011570 | 0.4667 | 0.5280 |
+
+These are the same frozen checkpoints and executed rollouts, joined by student seed and method. `results/distillation_vs_control.csv` contains all evaluated four-bit controls. Validation action MSE selects the checkpoint using separate expert trajectories; it is not a closed-loop stability criterion. In the original seed-7 comparison, combined EC-QAD-v1 has lower validation action MSE than uniform QAD yet much worse closed-loop tracking. Covariance-only has higher validation MSE than uniform but better closed-loop tracking. Thus poorer average offline fidelity alone does not explain the ordering. The data establish a mismatch between the scalar selection metric and closed-loop consequences, not a causal account of which action errors destabilize flight. No checkpoint has been reselected using evaluation outcomes.
+
 ## Causal limits and algorithm decision
 
 These diagnostics identify measurable saturation, ranking overlap, freshness, and time-scale differences. They do not establish which mechanism caused a particular trained policy to fail. Closed-loop comparisons across student seeds, covariance-specific shuffled weights, fault balancing, and saliency are required; offline action MSE alone is insufficient. No revised fusion formula or test-set hyperparameter search has been introduced. Covariance-only and innovation-only remain legitimate, separately labeled candidates. The final evidence-based decision is recorded in RESEARCH_VERDICT.md after the matched evaluation finishes.
