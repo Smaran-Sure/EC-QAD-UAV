@@ -1,0 +1,91 @@
+{
+  "nominal": {
+    "covariance_min_eigenvalue": 4.6001325124338876e-07,
+    "covariance_finite": true,
+    "gps_innovation_mean": [
+      1.6703026042165117,
+      -2.3337681115571225e-05,
+      -0.06991418905673707,
+      0.004675936473057605,
+      0.0012203596774666681,
+      0.0002289816698171923
+    ],
+    "gps_mean_nis_per_dof": 0.9790950669829451,
+    "heading_innovation_mean": [
+      4.518130116791647e-05
+    ],
+    "heading_mean_nis_per_dof": 0.9711822891041235,
+    "airspeed_innovation_mean": [
+      -0.009045528405096826
+    ],
+    "airspeed_mean_nis_per_dof": 0.9312244242313797
+  },
+  "gyro_bias": {
+    "covariance_min_eigenvalue": 4.601194857440345e-07,
+    "covariance_finite": true,
+    "gps_innovation_mean": [
+      1.3934707446717596,
+      -0.01359629372612672,
+      -0.04680144123885447,
+      -0.05042450922140581,
+      -0.0061921748639241206,
+      3.654762800602542e-05
+    ],
+    "gps_mean_nis_per_dof": 0.9522002195458983,
+    "heading_innovation_mean": [
+      3.591487170288885e-05
+    ],
+    "heading_mean_nis_per_dof": 0.9714916023410495,
+    "airspeed_innovation_mean": [
+      0.06509131164124957
+    ],
+    "airspeed_mean_nis_per_dof": 0.9482841983322479
+  },
+  "gps_dropout": {
+    "covariance_min_eigenvalue": 4.608424416168962e-07,
+    "covariance_finite": true,
+    "gps_innovation_mean": [
+      1.603605308234773,
+      0.08185579842973462,
+      -0.050597497444018175,
+      -0.014282895389953254,
+      -0.0021328009495462825,
+      -0.0007647542444420125
+    ],
+    "gps_mean_nis_per_dof": 0.9674570453746703,
+    "heading_innovation_mean": [
+      -3.312714592018404e-05
+    ],
+    "heading_mean_nis_per_dof": 0.981291526319246,
+    "airspeed_innovation_mean": [
+      0.01539815974145821
+    ],
+    "airspeed_mean_nis_per_dof": 0.8938644642944062,
+    "position_trace_before_during_after": [
+      0.18408114239195178,
+      70.08762206233571,
+      0.3068554679751758
+    ]
+  },
+  "airspeed_bias": {
+    "covariance_min_eigenvalue": 4.5801117364714384e-07,
+    "covariance_finite": true,
+    "gps_innovation_mean": [
+      -0.3576660922531812,
+      -0.5741383084803247,
+      0.17466990352793654,
+      -0.2623636657786657,
+      -0.08644876973064247,
+      0.008334093653289376
+    ],
+    "gps_mean_nis_per_dof": 1.85858402202353,
+    "heading_innovation_mean": [
+      -3.400552424140587e-05
+    ],
+    "heading_mean_nis_per_dof": 0.9767122814782501,
+    "airspeed_innovation_mean": [
+      0.418010698589229
+    ],
+    "airspeed_mean_nis_per_dof": 4.129974943376899
+  }
+}

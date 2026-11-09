@@ -22,6 +22,7 @@ def summarize(df: pd.DataFrame) -> dict:
     if {"cmd_airspeed_mps", "truth_airspeed_mps"}.issubset(df.columns):
         e = df["cmd_airspeed_mps"] - df["truth_airspeed_mps"]
         out["airspeed_rmse_mps"] = rmse(e)
+        out["airspeed_peak_abs_mps"] = float(np.nanmax(np.abs(e)))
     if {"est_pn_m", "truth_pn_m"}.issubset(df.columns):
         for axis in ("pn", "pe", "pd"):
             out[f"est_{axis}_rmse_m"] = rmse(df[f"est_{axis}_m"] - df[f"truth_{axis}_m"])

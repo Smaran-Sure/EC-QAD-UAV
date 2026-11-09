@@ -1,0 +1,20 @@
+{
+  "trim_ok": false,
+  "optimizer_success": true,
+  "optimizer_message": "`xtol` termination condition is satisfied.",
+  "target_airspeed_mps": 25.0,
+  "target_altitude_m": 300.0,
+  "alpha_deg": 17.991654101648656,
+  "elevator": 0.08599401768650432,
+  "throttle": 0.6840921171478879,
+  "aileron": 0.0,
+  "rudder": 0.0,
+  "residuals": [
+    -0.7440798669360154,
+    -0.13453293712139877,
+    0.26975258374344324
+  ],
+  "residual_norm": 0.8028202887236295,
+  "cost": 0.3222602079931459,
+  "nfev": 19
+}

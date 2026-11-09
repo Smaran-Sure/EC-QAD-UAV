@@ -3,7 +3,7 @@ aircraft:
   # installed stock data remains available for smoke-test fallback.
   model: Rascal110
   fallback_model: c172p
-  allow_fallback_for_smoke_test: true
+  allow_fallback_for_smoke_test: false
 
 simulation:
   plant_hz: 200.0

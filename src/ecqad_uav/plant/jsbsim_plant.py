@@ -290,8 +290,13 @@ class JSBSimPlant:
         else:
             lat0, lon0, alt0 = self._lat0, self._lon0, self._alt0_m
 
-        pn = (lat - lat0) * EARTH_RADIUS_M
-        pe = (lon - lon0) * EARTH_RADIUS_M * math.cos(lat0)
+        # Geodetic latitude requires the WGS84 meridional radius.
+        e2 = 6.6943799901413165e-3
+        denom = 1.0 - e2 * math.sin(lat0)**2
+        meridional = EARTH_RADIUS_M * (1.0-e2) / denom**1.5
+        prime_vertical = EARTH_RADIUS_M / math.sqrt(denom)
+        pn = (lat - lat0) * (meridional + alt0)
+        pe = (lon - lon0) * (prime_vertical + alt0) * math.cos(lat0)
         pd = -(alt_m - alt0)
 
         return TruthState(

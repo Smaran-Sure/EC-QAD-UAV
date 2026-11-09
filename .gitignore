@@ -4,7 +4,11 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .DS_Store
-results/**/*.csv
 results/**/*.npz
-results/checkpoints/
-results/*.npz
+results/**/checkpoints/
+results/**/data/
+results/**/signals/
+results/01_open_loop/
+results/05_truth_control/
+results/*_baseline.csv
+results/debug/*.csv

@@ -32,6 +32,7 @@ class PID:
             deriv = 0.0 if self.prev_error is None else (error - self.prev_error) / dt
         else:
             deriv = float(derivative_measurement)
+        self.last_derivative = deriv
         u_unsat = self.kp * error + self.ki * self.integral + self.kd * deriv
         u = float(np.clip(u_unsat, self.output_min, self.output_max))
         # Simple anti-windup: do not keep integrating farther into saturation.

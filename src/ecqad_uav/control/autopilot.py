@@ -100,6 +100,17 @@ class CascadedAutopilot:
             throttle=self.trim.throttle + throttle_delta,
         ).clipped()
 
+        # Deployment features contain navigation, references and deterministic
+        # controller memory only; no truth, covariance, NIS or fault labels.
+        self.features = np.array([
+            h_err/30, psi_err/.5, v_err/5,
+            nav.roll_rad/.5, nav.pitch_rad/.2,
+            nav.p_rad_s, nav.q_rad_s, nav.r_rad_s/.5,
+            self.heading.integral/.35, self.altitude.integral/100,
+            self.roll.integral/.5, self.pitch.integral/.5, self.airspeed.integral/20,
+            self.heading.last_derivative, self.altitude.last_derivative/10,
+            self.airspeed.last_derivative/10,
+        ], dtype=np.float32)
         dbg = {
             "cmd_altitude_m": ref.altitude_m,
             "cmd_heading_rad": ref.heading_rad,

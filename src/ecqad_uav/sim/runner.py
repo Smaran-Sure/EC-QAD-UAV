@@ -26,9 +26,15 @@ class SimulationRunner:
         estimator_enabled: bool = False,
         sensor_enabled: bool = True,
         duration_s: float | None = None,
+        policy=None, observer=None, log_hz: float | None = None,
+        reference_scale: float = 1.0, reference_time_scale: float = 1.0,
+        record_arrays: bool = False,
     ):
         if control_mode not in {"trim_hold", "open_loop", "truth_pid", "estimated_pid"}:
             raise ValueError(f"Unsupported control_mode={control_mode}")
+        self.policy, self.observer = policy, observer
+        self.log_hz, self.record_arrays = log_hz, record_arrays
+        self.reference_scale, self.reference_time_scale = reference_scale, reference_time_scale
         self.aircraft_cfg = aircraft_cfg
         self.sensor_cfg = sensor_cfg
         self.estimator_cfg = estimator_cfg
@@ -65,6 +71,13 @@ class SimulationRunner:
         estimator = NavigationUKF(self.estimator_cfg, self.sensor_cfg) if self.estimator_enabled else None
         autopilot = CascadedAutopilot(self.controller_cfg, trim)
         logger = RunLogger()
+        logger.covariances, logger.innovation_records = [], []
+        recent_nis = {"gps": 1., "heading": 1., "airspeed": 1.}
+        log_period = max(1, round(float(self.aircraft_cfg["simulation"]["plant_hz"]) / self.log_hz)) if self.log_hz else 1
+        completed = True
+        conventional = trim
+        features = np.zeros(16)
+        teacher_action = np.zeros(4)
 
         plant_hz = float(self.aircraft_cfg["simulation"]["plant_hz"])
         control_hz = float(self.controller_cfg["controller_hz"])
@@ -87,6 +100,9 @@ class SimulationRunner:
             if estimator is not None and packet is not None:
                 recs = estimator.process(packet)
                 for rec in recs:
+                    recent_nis[rec.sensor] = .9 * recent_nis[rec.sensor] + .1 * rec.nis / rec.dof
+                    if self.record_arrays:
+                        logger.innovation_records.append(rec)
                     nis_step[rec.sensor] = rec.nis
                     nis_threshold_step[rec.sensor] = rec.threshold95
 
@@ -98,19 +114,37 @@ class SimulationRunner:
                     current_cmd = self._open_loop_profile(t, trim)
                     latest_debug = {}
                 else:
-                    ref = standard_reference_profile(t, altitude0, heading0, airspeed0)
+                    ref = standard_reference_profile(t*self.reference_time_scale, altitude0, heading0, airspeed0)
+                    ref.altitude_m = altitude0 + self.reference_scale*(ref.altitude_m-altitude0)
+                    ref.heading_rad = heading0 + self.reference_scale*(ref.heading_rad-heading0)
+                    ref.airspeed_mps = airspeed0 + self.reference_scale*(ref.airspeed_mps-airspeed0)
                     if self.control_mode == "truth_pid":
                         nav = NavState.from_truth(truth)
                     else:
                         if estimator is None or not estimator.initialized:
-                            nav = NavState.from_truth(truth)  # only startup fallback before first GPS+heading
+                            raise RuntimeError("Estimator unavailable: no truth fallback allowed")
                         else:
                             nav = NavState.from_estimator(estimator.x, latest_airspeed, altitude0)
                             rates = estimator.last_imu_gyro - estimator.x[BG]
                             nav.p_rad_s, nav.q_rad_s, nav.r_rad_s = map(float, rates)
-                    current_cmd, latest_debug = autopilot.update(nav, ref, 1.0 / control_hz)
+                    conventional, latest_debug = autopilot.update(nav, ref, 1.0 / control_hz)
+                    features = autopilot.features
+                    current_cmd = conventional
+                    if self.policy is not None:
+                        current_cmd = ControlCommand(*map(float, self.policy(features))).clipped()
+                    teacher_action = np.array(list(conventional.__dict__.values())) if self.observer is None else self.observer(features)
 
+            invalid = not all(math.isfinite(v) for v in truth.as_dict().values())
+            failed = invalid or truth.altitude_m < 30 or truth.airspeed_mps < 5 or truth.airspeed_mps > 65 or abs(truth.pitch_rad) > 1.2
+            if k % log_period and not failed:
+                truth = plant.step(current_cmd, aileron_effectiveness=fstate.aileron_effectiveness)
+                continue
             row = {
+                **{f"feature_{j}": float(v) for j,v in enumerate(features)},
+                **{f"teacher_{j}": float(v) for j,v in enumerate(teacher_action)},
+                **{f"pid_{j}": float(v) for j,v in enumerate(conventional.__dict__.values())},
+                "nis_normalized_ewma": float(np.mean(list(recent_nis.values()))),
+                "constraint_violation": int(invalid or abs(truth.roll_rad)>math.radians(60) or abs(truth.pitch_rad)>math.radians(30) or truth.airspeed_mps<12 or truth.airspeed_mps>40 or truth.altitude_m<100),
                 **{f"truth_{k0}": v for k0, v in truth.as_dict().items() if k0 != "t"},
                 "time_s": t,
                 "u_aileron": current_cmd.aileron,
@@ -149,13 +183,22 @@ class SimulationRunner:
 
             if estimator is not None and estimator.initialized:
                 row.update(estimator.state_dict())
+                scales = np.r_[np.full(3, 25.), np.full(3, math.radians(5)**2)]
+                row["covariance_score"] = float(np.log1p(np.mean(np.diag(estimator.P)[[0,1,2,6,7,8]]/scales)))
+                if self.record_arrays:
+                    logger.covariances.append(estimator.P.copy())
 
             logger.append(row)
+            if failed:
+                completed = False
+                break
             if k == n_steps:
                 break
             truth = plant.step(current_cmd, aileron_effectiveness=fstate.aileron_effectiveness)
 
         metadata = {
+            "completed": completed,
+            "actual_duration_s": truth.t,
             "control_mode": self.control_mode,
             "estimator_enabled": self.estimator_enabled,
             "duration_s": self.duration_s,
