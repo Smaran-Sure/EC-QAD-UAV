@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 import matplotlib.pyplot as plt
-from ecqad_uav.utils.config import project_root
+from ecqad_uav.utils.config import project_root, load_yaml
 
 ROOT=project_root(); OUT=ROOT/'results'; FIG=OUT/'figures'
 plt.rcParams.update({'font.size':9,'axes.spines.top':False,'axes.spines.right':False,'savefig.dpi':300,'pdf.fonttype':42})
@@ -97,15 +97,15 @@ def signal_analysis():
         keys=['training_seed','method','bits','condition','episode']
         scope=pd.read_csv(scope_path)[keys].drop_duplicates()
         s=s.merge(scope,on=keys,how='inner')
-    teachers=s[s.method=='teacher'][['training_seed','episode_seed','time_s','future_tracking']].rename(columns={'future_tracking':'teacher_future'})
-    s=s[s.method=='uniform'].merge(teachers,on=['training_seed','episode_seed','time_s'],how='left')
+    teachers=s[s.method=='teacher'][['episode_seed','time_s','future_tracking']].rename(columns={'future_tracking':'teacher_future'})
+    s=s[s.method=='uniform'].merge(teachers,on=['episode_seed','time_s'],how='left')
     s['excess_future_tracking']=s.future_tracking-s.teacher_future
     from ecqad_uav.learning.policy import Policy,policy_saliency
     import torch
     torch.set_num_threads(1)
     s['saliency']=0.
     for seed,g in s.groupby('training_seed'):
-        model=Policy.load(OUT/'checkpoints'/f'seed{seed}'/'teacher.pt')
+        model=Policy.load(OUT/'checkpoints'/f"seed{load_yaml('study.yaml')['teacher_seed']}"/'teacher.pt')
         s.loc[g.index,'saliency']=policy_saliency(model,g[[f'feature_{j}' for j in range(16)]].to_numpy(np.float32))
     rows=[]
     for bits,group in s.groupby('bits'):
@@ -152,7 +152,10 @@ def report(*, write_docs=True):
     d.loc[mask,'duration_s']=145.-d.loc[mask,'onset_s']
     d['episode_duration_s']=180.
     d['fault_end_s']=np.where(d.condition=='nominal',np.nan,d.onset_s+d.duration_s)
-    d.to_csv(p,index=False)
+    # Raw episode tables remain immutable during reporting.
+    d['failed_before_fault']=((d.failed>0)&(d.condition!='nominal')&(d.completed_s<=d.onset_s)).astype(int)
+    d['fault_exposure_s']=np.where(d.condition=='nominal',0.,np.maximum(np.minimum(d.completed_s,d.fault_end_s)-d.onset_s,0.))
+    d.groupby(['method','bits','condition']).agg(episodes=('failed','size'),failed=('failed','sum'),failed_before_fault=('failed_before_fault','sum'),mean_fault_exposure_s=('fault_exposure_s','mean')).reset_index().to_csv(OUT/'failure_timing.csv',index=False)
     d['regime']=np.where(d.condition=='nominal','nominal','off_nominal')
     cols=['altitude_rmse_m','heading_rmse_deg','airspeed_rmse_mps','tracking_score','constraint_fraction','failed','action_rmse']
     summary=d.groupby(['method','bits','regime'])[cols].agg(['mean','std','count']); summary.columns=['_'.join(c) for c in summary.columns]; summary.reset_index().to_csv(OUT/'summary.csv',index=False)
@@ -248,14 +251,14 @@ def write_results_docs(d):
     if (OUT/'signal_analysis.csv').exists():
         signal=pd.read_csv(OUT/'signal_analysis.csv'); g=signal[(signal.bits==4)&(signal.condition=='conditional_episode_cv')]
         conditional=' '.join(f"For 4-bit uniform QAD, adding covariance/NIS changed held-out prediction MSE for {r.target} by {-100*r.relative_mse_reduction:+.2f}% beyond fault labels, time, attitude magnitudes, current tracking severity, training-seed indicators and teacher-Jacobian sensitivity." for r in g.itertuples())
-    limitations='The aircraft has approximate public BETA aerodynamics; sensors and faults are synthetic; flight is still-air; the teacher imitates a conventional controller using a memoryless physical-state/reference interface. Quantization is simulated, and no hardware latency, energy or speedup was measured. Two-bit prefix RMSE can look deceptively favorable when an episode terminates: use failures and the penalized score. Correlations and conditional prediction do not establish causal compression criticality. A small number of training seeds limits inference about optimization variability.'
+    limitations='The aircraft has approximate public BETA aerodynamics; sensors and faults are synthetic; flight is still-air; the teacher imitates a conventional controller using a memoryless physical-state/reference interface. Quantization is simulated, and no hardware latency, energy or speedup was measured. Two-bit prefix RMSE can look deceptively favorable when an episode terminates: use failures and the penalized score. Correlations and conditional prediction do not establish causal compression criticality. H1 uses observed trajectory prefixes and cannot reconstruct counterfactual tracking after early termination; severe low-bit failures therefore restrict its interpretation. All student seeds share the accepted frozen seed-7 teacher; inference is conditional on that one teacher. A separately trained seed-19 teacher failed its tracking gate and is preserved in the rejected-candidate archive. A small number of student training seeds limits inference about optimization variability.'
     text=f'''# Executed EC-QAD results
 
-This report is generated from `results/per_episode_metrics.csv`; it contains {complete} executed rollouts across training seeds {seeds}. Unique randomized scenario seeds per condition: {unique_scenarios}. Scenarios are shared across methods and training seeds. Counts below identify the actual scope, rather than the planned scope. The prior spherical-coordinate experiment is quarantined under `results/archive/v0_spherical_coordinate_bug/` and is excluded here.
+This report is generated from `results/per_episode_metrics.csv`; it contains {complete} executed rollouts across training seeds {seeds}. Unique randomized scenario seeds per condition: {unique_scenarios}. Scenarios are shared across methods and training seeds. Counts below identify the actual scope, rather than the planned scope. The prior spherical-coordinate experiment is quarantined under `results/archive/v0_spherical_coordinate_bug/` and is excluded here. The PID-memory-dependent study in `results/archive/v1_pid_dependent_exploratory/` is also exploratory and excluded. Current teacher/student inputs use `physical_reference_v2`; neural deployments neither instantiate nor execute PID.
 
 ## Main table
 
-Score is the normalized heading/altitude/airspeed tracking metric defined in EXPERIMENT_DESIGN.md. N/F means nominal/off-nominal. Failure penalty applies to the score; physical RMSE is over the observed trajectory. Storage is ideal packed weights plus documented FP32 overhead, not an on-disk or hardware measurement.
+Score is the normalized heading/altitude/airspeed tracking metric defined in EXPERIMENT_DESIGN.md. N/F means nominal/off-nominal. Failure penalty applies to the score; physical RMSE is over the observed trajectory. A condition labels the scheduled scenario; a failed flight may terminate before its fault begins. See `results/failure_timing.csv` for actual fault exposure and pre-onset failures. Storage is ideal packed weights plus documented FP32 overhead, not an on-disk or hardware measurement.
 
 {table}
 
@@ -312,7 +315,7 @@ H1: do estimator signals predict compression-related action error or subsequent 
 
 ## 4. EC-QAD algorithm
 
-Dimensionless selected-covariance and normalized-NIS summaries are standardized using training data, combined, exponentiated with a population-normalizing offset, and clipped to [0.5,2]. Their training-population mean is one. The student minimizes weighted teacher-action MSE. Covariance/NIS do not become deployed student inputs. Fixed bit width redistributes training emphasis; it does not allocate bits dynamically.
+Dimensionless selected-covariance and normalized-NIS summaries are standardized using training data, combined, exponentiated with a population-normalizing offset, and clipped to [0.5,2]. Their training-population mean is one. The student minimizes weighted teacher-action MSE. Covariance/NIS do not become deployed student inputs. Teacher and student share a physical-navigation/reference interface with no PID internal state or computation. Fixed bit width redistributes training emphasis; it does not allocate bits dynamically.
 
 ## 5. Experimental setup
 

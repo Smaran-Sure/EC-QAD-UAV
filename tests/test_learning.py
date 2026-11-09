@@ -77,3 +77,15 @@ def test_rejects_unversioned_exploratory_checkpoint(tmp_path):
     import pytest
     with pytest.raises(ValueError,match='schema mismatch'):
         Policy.load(path)
+
+
+def test_training_conditioning_metadata_is_not_a_runtime_input(tmp_path):
+    model=Policy(bits=4)
+    x=np.random.default_rng(4).normal(size=(10,16)).astype(np.float32)
+    outputs=[]
+    for mode in ('uniform','ecqad','covariance','innovation','shuffled','fault_balanced'):
+        path=tmp_path/f'{mode}.pt'
+        model.save(path,method=mode,weighting={'training_only':mode})
+        outputs.append(Policy.load(path).numpy_policy()(x))
+    for output in outputs[1:]:
+        np.testing.assert_array_equal(output,outputs[0])

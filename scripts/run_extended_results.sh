@@ -22,9 +22,8 @@ if not out.exists():
 PY
 for seed in 7 19 43
 do
-    "$PYTHON" experiments/run_study.py teacher --seed "$seed"
-    "$PYTHON" experiments/run_study.py teacher_gate --seed "$seed" --workers 4
     "$PYTHON" experiments/run_study.py students --seed "$seed" --ablations
+    "$PYTHON" experiments/run_study.py deployment_gate --seed "$seed" --workers 4
     if [ "$seed" = 7 ]; then
         "$PYTHON" experiments/run_study.py evaluate --seed "$seed" --episodes 20 --workers 4 --ablations
     else

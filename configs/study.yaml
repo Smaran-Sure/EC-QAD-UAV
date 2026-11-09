@@ -1,5 +1,6 @@
 # Frozen before EC-QAD evaluation. Splits are whole independent trajectories.
 seed: 20261108
+teacher_seed: 7  # One validated, frozen teacher shared by all student seeds.
 training_seeds: [7, 19, 43]
 conditions: [nominal, gyro_bias, gps_dropout, airspeed_bias]
 train_episodes_per_condition: 8

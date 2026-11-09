@@ -1,0 +1,2 @@
+training_seed,method,bits,epochs,training_samples,validation_samples,validation_action_mse,elapsed_s,storage_bytes,weight_mean,weight_minimum,weight_maximum,weight_log_shift
+19,teacher,32,180,115232,28808,0.0034891818650066853,61.852498499676585,7120,,,,

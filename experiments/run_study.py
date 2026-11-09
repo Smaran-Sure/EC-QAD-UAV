@@ -150,7 +150,7 @@ def train(seed,students=False,ablations=False):
     X,Y,C,N,L=dataset('train'); VX,VY,*_=dataset('validation')
     x,y,vx,vy=map(torch.from_numpy,(X,Y,VX,VY))
     ck=OUT/'checkpoints'/f'seed{seed}'; ck.mkdir(parents=True,exist_ok=True)
-    teacher_path=ck/'teacher.pt'
+    teacher_path=(OUT/'checkpoints'/f"seed{CFG['teacher_seed']}"/'teacher.pt') if students else ck/'teacher.pt'
     runs=[]
     if students:
         teacher=Policy.load(teacher_path)
@@ -186,7 +186,7 @@ def train(seed,students=False,ablations=False):
                 best=val; best_state={k:v.detach().clone() for k,v in model.state_dict().items()}
             if epoch%30==0 or epoch==epochs-1: print(method,bits,'seed',seed,'epoch',epoch,'train',total/len(x),'validation',val,flush=True)
         model.load_state_dict(best_state)
-        model.save(path,seed=seed,method=method,weighting=wmeta,validation_mse=best,epochs=epochs)
+        model.save(path,seed=seed,teacher_seed=CFG['teacher_seed'],method=method,weighting=wmeta,validation_mse=best,epochs=epochs)
         runs.append(dict(training_seed=seed,method=method,bits=bits,epochs=epochs,training_samples=len(x),validation_samples=len(vx),validation_action_mse=best,elapsed_s=time.monotonic()-start,storage_bytes=model.storage_bytes(),**{f'weight_{k}':v for k,v in wmeta.items() if isinstance(v,(int,float))}))
         tablepath=OUT/'training_runs.csv'
         old=pd.read_csv(tablepath) if tablepath.exists() else pd.DataFrame()
@@ -198,8 +198,8 @@ def train(seed,students=False,ablations=False):
 
 
 def evaluate(seed,workers,episodes,ablations,tag="",methods=None):
-    ck=OUT/'checkpoints'/f'seed{seed}'; teacher=ck/'teacher.pt'
-    models=[('teacher',32,teacher)]
+    ck=OUT/'checkpoints'/f'seed{seed}'; teacher=OUT/'checkpoints'/f"seed{CFG['teacher_seed']}"/'teacher.pt'
+    models=[('teacher',32,teacher)] if seed==CFG['teacher_seed'] else []
     if seed==7: models.append(('pid',32,None))
     for bits in CFG['bits']:
         for method in (CFG['methods']+['ptq'] if ablations else ['uniform','ecqad']):
@@ -244,7 +244,7 @@ def main():
         if result.failed.sum() or ratio>1.5: raise RuntimeError('Teacher closed-loop validation gate failed')
     elif args.stage=='deployment_gate':
         ck=OUT/'checkpoints'/f'seed{args.seed}'
-        jobs=[('validation_policy','nominal',0,str(ck/f'{m}_{b}.pt'),str(ck/'teacher.pt'),m,b,args.seed,False)
+        jobs=[('validation_policy','nominal',0,str(ck/f'{m}_{b}.pt'),str(OUT/'checkpoints'/f"seed{CFG['teacher_seed']}"/'teacher.pt'),m,b,args.seed,False)
               for m in ('uniform','ecqad') for b in CFG['bits']]
         with ProcessPoolExecutor(max_workers=args.workers) as pool: rows=list(pool.map(rollout,jobs))
         result=pd.DataFrame(rows)
