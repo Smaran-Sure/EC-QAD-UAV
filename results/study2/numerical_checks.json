@@ -1,0 +1,9 @@
+{
+  "pytest_passed": 27,
+  "command": "OPENBLAS_NUM_THREADS=1 MPLBACKEND=Agg MPLCONFIGDIR=/tmp/ecqad-mpl .venv/bin/python -m pytest -q",
+  "action_parity_atol": 2e-06,
+  "action_parity_rtol": 2e-06,
+  "empirical_covariance_relative_frobenius_tolerance": 0.08,
+  "empirical_samples": 12000,
+  "diagnostic_only": true
+}
