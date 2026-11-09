@@ -65,3 +65,5 @@ The original numbered baseline experiments remain available for focused controll
 ## Independent neural deployment
 
 The current `physical_reference_v2` policy consumes only physical estimated navigation and reference commands. PID execution is disabled in neural rollouts. Covariance and NIS affect training weights only. Prior PID-memory-dependent outputs are preserved under `results/archive/v1_pid_dependent_exploratory/`; they are exploratory and are not results for the corrected architecture. The teacher validation gate must pass before new student training/evaluation.
+
+The validated FP32 teacher uses seed 7 and is frozen across student optimization seeds 7, 19, and 43 (`teacher_seed` in the study configuration). Student-seed intervals are conditional on that teacher. A rejected seed-19 teacher candidate is preserved separately; it is not silently substituted into any comparison. The first corrected 160-rollout pilot is preserved in `results/initial_pilot_seed7/`.

@@ -187,7 +187,7 @@ def train(seed,students=False,ablations=False):
             if epoch%30==0 or epoch==epochs-1: print(method,bits,'seed',seed,'epoch',epoch,'train',total/len(x),'validation',val,flush=True)
         model.load_state_dict(best_state)
         model.save(path,seed=seed,teacher_seed=CFG['teacher_seed'],method=method,weighting=wmeta,validation_mse=best,epochs=epochs)
-        runs.append(dict(training_seed=seed,method=method,bits=bits,epochs=epochs,training_samples=len(x),validation_samples=len(vx),validation_action_mse=best,elapsed_s=time.monotonic()-start,storage_bytes=model.storage_bytes(),**{f'weight_{k}':v for k,v in wmeta.items() if isinstance(v,(int,float))}))
+        runs.append(dict(training_seed=seed,teacher_seed=CFG['teacher_seed'],method=method,bits=bits,epochs=epochs,training_samples=len(x),validation_samples=len(vx),validation_action_mse=best,elapsed_s=time.monotonic()-start,storage_bytes=model.storage_bytes(),**{f'weight_{k}':v for k,v in wmeta.items() if isinstance(v,(int,float))}))
         tablepath=OUT/'training_runs.csv'
         old=pd.read_csv(tablepath) if tablepath.exists() else pd.DataFrame()
         pd.concat([old,pd.DataFrame([runs[-1]])],ignore_index=True).to_csv(tablepath,index=False)

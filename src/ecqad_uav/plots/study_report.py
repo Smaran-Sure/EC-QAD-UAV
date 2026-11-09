@@ -369,7 +369,7 @@ def refresh_training_records():
         if len(old):
             match=old[(old.training_seed==seed)&(old.method==method)&(old.bits==bits)]
             if len(match):row=match.iloc[-1].to_dict()
-        row.update(training_seed=seed,method=method,bits=bits,epochs=meta.get('epochs',0),validation_action_mse=meta.get('validation_mse',np.nan),storage_bytes=Policy.load(checkpoint).storage_bytes(),checkpoint=str(checkpoint.relative_to(ROOT)))
+        row.update(training_seed=seed,teacher_seed=meta.get('teacher_seed',load_yaml('study.yaml')['teacher_seed']),method=method,bits=bits,epochs=meta.get('epochs',0),validation_action_mse=meta.get('validation_mse',np.nan),storage_bytes=Policy.load(checkpoint).storage_bytes(),checkpoint=str(checkpoint.relative_to(ROOT)))
         for key,value in meta.get('weighting',{}).items():
             if isinstance(value,(int,float)):row['weight_'+key]=value
         rows.append(row)
