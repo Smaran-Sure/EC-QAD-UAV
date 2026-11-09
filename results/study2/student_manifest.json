@@ -1,0 +1,102 @@
+{
+  "selected_candidates": [
+    {
+      "method": "teacher",
+      "seed": 7,
+      "selected_epoch": 120,
+      "offline_best_epoch": 120,
+      "selected_score": 0.24991539996635098,
+      "selected_offline_mse": 0.0032766982913017273
+    },
+    {
+      "method": "teacher",
+      "seed": 19,
+      "selected_epoch": 180,
+      "offline_best_epoch": 180,
+      "selected_score": 0.2543560831151692,
+      "selected_offline_mse": 0.003424187423661351
+    },
+    {
+      "method": "teacher",
+      "seed": 43,
+      "selected_epoch": 60,
+      "offline_best_epoch": 120,
+      "selected_score": 0.3952024118225794,
+      "selected_offline_mse": 0.0037141896318644285
+    },
+    {
+      "method": "uniform",
+      "seed": 7,
+      "selected_epoch": 25,
+      "offline_best_epoch": 75,
+      "selected_score": 0.2706991443724864,
+      "selected_offline_mse": 0.0015160457696765661
+    },
+    {
+      "method": "uniform",
+      "seed": 19,
+      "selected_epoch": 75,
+      "offline_best_epoch": 75,
+      "selected_score": 0.3321232678700044,
+      "selected_offline_mse": 0.0011544694425538182
+    },
+    {
+      "method": "uniform",
+      "seed": 43,
+      "selected_epoch": 25,
+      "offline_best_epoch": 75,
+      "selected_score": 0.3000559500932683,
+      "selected_offline_mse": 0.0016048004617914557
+    },
+    {
+      "method": "uniform",
+      "seed": 61,
+      "selected_epoch": 50,
+      "offline_best_epoch": 50,
+      "selected_score": 0.26250379774405974,
+      "selected_offline_mse": 0.0012352998601272702
+    },
+    {
+      "method": "uniform",
+      "seed": 89,
+      "selected_epoch": 25,
+      "offline_best_epoch": 100,
+      "selected_score": 0.36795985035583956,
+      "selected_offline_mse": 0.0013200376415625215
+    }
+  ],
+  "sha256": {
+    "results/study2/checkpoints/seed19/uniform_resume.pt": "03a52696039e4531f9ee030d3822a77dc7c7157c86bfc3b57c0fcecc2e1ee6da",
+    "results/study2/checkpoints/seed19/uniform.pt": "cb9ae87f8ef586a28c46adf37b68b2146e5388885e93b03fecbf27441809066f",
+    "results/study2/checkpoints/seed19/uniform_epoch25.pt": "f0960b25f76b5d836dcbc4a3e09e574744b6aa572ff974c3304ae5224020e8e9",
+    "results/study2/checkpoints/seed19/uniform_epoch50.pt": "2c119cd5fd2785824c098479034935f82965fb58ec653ee1f16b0cfff524f227",
+    "results/study2/checkpoints/seed19/uniform_epoch75.pt": "cb9ae87f8ef586a28c46adf37b68b2146e5388885e93b03fecbf27441809066f",
+    "results/study2/checkpoints/seed19/uniform_epoch100.pt": "768173539c87f9642ff2b22aa9c14f7765129296268df064559e1e0a69e37d90",
+    "results/study2/checkpoints/seed43/uniform_resume.pt": "33a7a43fd86634c919165fbc454c5aad6cd878b2ba137d6b44570f0fd5e9a229",
+    "results/study2/checkpoints/seed43/uniform.pt": "194acb522fdda79e306d94c320725591f48769853e7a2b3b4c8b35f50d563e24",
+    "results/study2/checkpoints/seed43/uniform_epoch25.pt": "194acb522fdda79e306d94c320725591f48769853e7a2b3b4c8b35f50d563e24",
+    "results/study2/checkpoints/seed43/uniform_epoch50.pt": "8f33a803ea5a8def93a9a2e696c2384edd7267a7ecbe2060e0c2d87b4e059768",
+    "results/study2/checkpoints/seed43/uniform_epoch75.pt": "dc4c2a65cacc9983b18ecfcb6d579534fccb31c4b7429651aa42c22362684861",
+    "results/study2/checkpoints/seed43/uniform_epoch100.pt": "1b336c3285950f8e037d2e34f8d8dfe301b76df4ad1ac10a695ed1c5b142c0a7",
+    "results/study2/checkpoints/seed7/uniform_resume.pt": "fbfca3872a576f4c84889eda6ab973d2cebf890b34f1044310dde7e4f93a541b",
+    "results/study2/checkpoints/seed7/uniform.pt": "ea6459d9f568da3acdaad9a4322546b2f1104a277c2eb2cf61a46b8dddc80170",
+    "results/study2/checkpoints/seed7/uniform_epoch25.pt": "ea6459d9f568da3acdaad9a4322546b2f1104a277c2eb2cf61a46b8dddc80170",
+    "results/study2/checkpoints/seed7/uniform_epoch50.pt": "a5d0b9756ea3110286a3cc0b952566060a8ca89c19217ebcf9d572d43faf5017",
+    "results/study2/checkpoints/seed7/uniform_epoch75.pt": "3b1221adf4774be6375f3038502c73e5c11b99876f0956102af13a9ca17cb432",
+    "results/study2/checkpoints/seed7/uniform_epoch100.pt": "268e6e4424ff939d4f78243f392d89c5f67ccd70be25056e1fc56cc07fb4bce1",
+    "results/study2/checkpoints/seed89/uniform_resume.pt": "12d61921f9db7f132427b6e68f489639e680c846552843dcc44f0c6884e7f1ae",
+    "results/study2/checkpoints/seed89/uniform.pt": "53270c0203b89ecad3786e2655b5eb53d39346a57b81d2edadeaaee512e4eac9",
+    "results/study2/checkpoints/seed89/uniform_epoch25.pt": "53270c0203b89ecad3786e2655b5eb53d39346a57b81d2edadeaaee512e4eac9",
+    "results/study2/checkpoints/seed89/uniform_epoch50.pt": "1dcd5d24e0e2e79768dcf3457d5a7bf58979748100167c9b9d4623a362629e56",
+    "results/study2/checkpoints/seed89/uniform_epoch75.pt": "256bddae3111048cd7de3c8598724b58d4cbddb2c311648a482259f14ebf31e2",
+    "results/study2/checkpoints/seed89/uniform_epoch100.pt": "7ad0915cbd69480863a97f19b27d1ee5d93de827656aff648472fb394202df89",
+    "results/study2/checkpoints/seed61/uniform_resume.pt": "1e26ba643d34def27528b58ca5c2067de1c639a98c355b4fc128270c5dc6e697",
+    "results/study2/checkpoints/seed61/uniform.pt": "ff2f84a4f7a91ad026bf523c651dce79e0e28961ccdf7154637ec3c31da872d2",
+    "results/study2/checkpoints/seed61/uniform_epoch25.pt": "e4f8cf17d76ff3c18fe2005e9307505e7c254ff2b9fde6caa7ec8b7ff3f65557",
+    "results/study2/checkpoints/seed61/uniform_epoch50.pt": "ff2f84a4f7a91ad026bf523c651dce79e0e28961ccdf7154637ec3c31da872d2",
+    "results/study2/checkpoints/seed61/uniform_epoch75.pt": "6f5d79df05e4901bb79d049a96967893fe1acf48f79220c079f8b78eb26f783a",
+    "results/study2/checkpoints/seed61/uniform_epoch100.pt": "f7a7c78766703ffd32fc2d1f1089bcdd7e471bd0220bf4e9ee0000555f571528",
+    "results/study2_checkpoint_selection.csv": "4f21b19604d92720089d0ce3916973f4f129a3bc2859d69099b5d3db47ec125c",
+    "results/study2/selection_rollouts.csv": "4d11cf75d6cbba491a746e816b0741694d97b74653c6756287662c69abe83cf8"
+  }
+}
