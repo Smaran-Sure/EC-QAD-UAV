@@ -60,11 +60,12 @@
     "configs/sensors.yaml": "b807a8d427518d87b4ca3bd518486f2071ad48424f0c6fa24edb40b2084ead23",
     "configs/faults.yaml": "08c630ea5f4b5161727cabb44c1aeee78a888ceb57e00ded23d73339418eb5e2",
     "configs/aircraft.yaml": "002b2007e2d958307c908bcd5a734e4883da9c3646abc56ddaa69c671ef087fe",
-    "experiments/run_study.py": "4a987d0a1d331600df988902a8f7db0849e753fe2782fef626ad235ea79e5953"
+    "experiments/run_study.py": "3c839d215a8a7aa8a8723f88ac692af82032ad1b41300fec568856bd32466f82"
   },
   "model_sha256": {
     "models/jsbsim/aircraft/Rascal110/Rascal110.xml": "01e0e0962ef62c9d3a216d7214dc3355b8a8f85b4886e97b5eb558967d98f11d",
     "models/jsbsim/engine/Zenoah_G-26A.xml": "72d265659bcab24ba7b959c98b6cd4da2b04ed134745c6201a0126b44f84d150",
     "models/jsbsim/engine/18x8.xml": "0689018b7621e302331bb718856ffb9951f50b75f8ea53035eb7f74ebf04ed26"
-  }
+  },
+  "git_head": "c9f6b166049d61b4b6e6cccd52e746dce9ce8c5f"
 }
