@@ -1,0 +1,64 @@
+{
+  "study1_files_verified_unchanged": 3036,
+  "protocol_teacher_student_manifests_match": true,
+  "signal_rollouts": 480,
+  "unique_scenarios": 80,
+  "student_seeds": [
+    7,
+    19,
+    43,
+    61,
+    89
+  ],
+  "teacher_seeds_trained": [
+    7,
+    19,
+    43
+  ],
+  "teacher_seeds_passed": [
+    7,
+    19
+  ],
+  "matched_scenarios": true,
+  "neural_pid_execution": false,
+  "feature_schema": "physical_reference_v2",
+  "candidate_checkpoints": 29,
+  "candidate_selection_rollouts": 116,
+  "signal_rows": 86807,
+  "q_finite_nonnegative": true,
+  "q_matches_sum_actuator_variances": true,
+  "minimum_propagated_eigenvalue": -4.34165148895869e-17,
+  "test_unopened": true,
+  "signal_gate_passed": false,
+  "cr_training_not_run_per_protocol": true,
+  "pytest_passed": 27,
+  "deterministic_replay": {
+    "case": "uniform seed7 nominal episode0 validation_signal",
+    "absolute_differences": {
+      "tracking_score": 0.0,
+      "altitude_rmse_m": 0.0,
+      "heading_rmse_deg": 0.0,
+      "airspeed_rmse_mps": 0.0,
+      "control_effort": 0.0,
+      "action_rmse": 0.0,
+      "failed": 0.0,
+      "completed_s": 0.0
+    },
+    "pid_executed": false,
+    "tolerance": 1e-10
+  },
+  "completed_experiment_flights": 664,
+  "requirement_coverage": {
+    "phase0": "Study 1 tag, local archive, 3036 unchanged file hashes, frozen summary",
+    "phase1": "bounded action parity; 29 candidates with offline MSE and 116 SELECT flights; disjoint TRAIN/SELECT/GATE/SIGNAL/TEST IDs",
+    "phase2": "analytic G and automatic J; full P; q/traceP/C/sensitivity/four action variances saved; mathematical and empirical tests passed",
+    "phase3": "480 SIGNAL flights, five uniform student seeds, three targets, episode CV, nuisance controls, separate predictors and q beyond both",
+    "phase4": "NO-GO: neither primary adjusted interval lower bound exceeds zero; TEST remains locked",
+    "phases5_6_8": "Conditional downstream CR/covariance/shuffle interventions intentionally NOT executed after mandatory no-go; no superiority claim",
+    "phase7": "five student optimization seeds; matched 20-per-condition SIGNAL cases; physical and composite metrics retained; final TEST deferred by no-go",
+    "phase9": "three teachers trained and reported, two pass, first passing frozen before students",
+    "phase10": "no NIS fusion; NIS diagnostic only",
+    "phase11": "27 tests plus exact end-to-end replay and preservation/manifest checks; no CR shuffle test needed for an unimplemented gated method",
+    "phase12": "all five requested Study 2 CSVs and four required documents plus negative verdict exist; untested comparisons explicitly labeled"
+  }
+}

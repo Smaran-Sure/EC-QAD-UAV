@@ -1,0 +1,41 @@
+{
+  "passed": false,
+  "criterion": "incremental_q_beyond_covariance_and_sensitivity_lower_bound_positive",
+  "required_positive_seeds": 4,
+  "interval": "97.5% two-sided per outcome; two prespecified primary outcomes",
+  "outcomes": [
+    {
+      "kind": "incremental_prediction",
+      "target": "future_tracking",
+      "baseline": "covariance+sensitivity",
+      "predictor": "covariance+sensitivity+q",
+      "reduction": 0.0009045850745010853,
+      "ci_low": -0.001273076423631922,
+      "ci_high": 0.0023208458710014955,
+      "positive_seeds": 4.0,
+      "seeds": 5.0,
+      "episode_groups": 80.0,
+      "samples": 70327.0,
+      "seed_reductions": "{\"7\": 6.858848456925415e-05, \"19\": -0.0008626074649704663, \"43\": 0.0026373179359063803, \"61\": 0.0005605225284364135, \"89\": 0.0017940119057419102}",
+      "condition": null,
+      "spearman": null
+    },
+    {
+      "kind": "incremental_prediction",
+      "target": "excess_future_tracking",
+      "baseline": "covariance+sensitivity",
+      "predictor": "covariance+sensitivity+q",
+      "reduction": 0.00020184550457669204,
+      "ci_low": -0.0006322101833335537,
+      "ci_high": 0.0008767017462765745,
+      "positive_seeds": 3.0,
+      "seeds": 5.0,
+      "episode_groups": 80.0,
+      "samples": 70327.0,
+      "seed_reductions": "{\"7\": 0.0006975926327795756, \"19\": 0.00030213236760334716, \"43\": -0.0003170340264435634, \"61\": 0.0008373567254644776, \"89\": -0.0005546718662978734}",
+      "condition": null,
+      "spearman": null
+    }
+  ],
+  "test_accessed": false
+}
