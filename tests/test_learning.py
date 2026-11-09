@@ -89,3 +89,13 @@ def test_training_conditioning_metadata_is_not_a_runtime_input(tmp_path):
         outputs.append(Policy.load(path).numpy_policy()(x))
     for output in outputs[1:]:
         np.testing.assert_array_equal(output,outputs[0])
+
+
+def test_covariance_shuffled_preserves_covariance_weight_distribution():
+    rng=np.random.default_rng(13)
+    cov=rng.lognormal(size=1000); nis=rng.chisquare(3,1000)
+    w,_=conditioning_weights(cov,nis,'covariance',19)
+    shuffled,_=conditioning_weights(cov,nis,'covariance_shuffled',19)
+    np.testing.assert_array_equal(np.sort(w),np.sort(shuffled))
+    np.testing.assert_array_equal(shuffled,np.random.default_rng(19).permutation(w))
+    assert not np.array_equal(w,shuffled)

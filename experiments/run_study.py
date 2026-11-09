@@ -194,7 +194,8 @@ def train(seed,students=False,ablations=False):
     if students:
         # PTQ is a zero-optimization comparator with identical ranges/architecture.
         for bits in CFG['bits']:
-            m=Policy(bits,CFG['width']); m.load_state_dict(teacher.state_dict()); m.save(ck/f'ptq_{bits}.pt',seed=seed,method='ptq')
+            if not (ck/f'ptq_{bits}.pt').exists():
+                m=Policy(bits,CFG['width']); m.load_state_dict(teacher.state_dict()); m.save(ck/f'ptq_{bits}.pt',seed=seed,teacher_seed=CFG['teacher_seed'],method='ptq')
 
 
 def evaluate(seed,workers,episodes,ablations,tag="",methods=None):
@@ -216,7 +217,7 @@ def evaluate(seed,workers,episodes,ablations,tag="",methods=None):
             for ep in range(episodes):
                 if (seed,method,bits,condition,ep) in done: continue
                 jobs.append(('evaluation',condition,ep,str(model) if model else None,str(teacher),method,bits,seed,ep==0))
-    jobs.sort(key=lambda j: (j[2], CONDITIONS.index(j[1]), j[5], j[6]))
+    jobs.sort(key=lambda j: (j[2], CONDITIONS.index(j[1]), {4:0,8:1,32:2,2:3}[j[6]], j[5]))
     with ProcessPoolExecutor(max_workers=workers) as pool:
         for i,r in enumerate(pool.map(rollout,jobs)):
             old=pd.concat([old,pd.DataFrame([r])],ignore_index=True)

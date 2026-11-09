@@ -14,7 +14,7 @@ student_epochs: 100
 batch_size: 1024
 learning_rate: 0.001
 bits: [8, 4, 2]
-methods: [uniform, ecqad, covariance, innovation, shuffled, balanced, saliency, fault_balanced]
+methods: [uniform, ecqad, covariance, innovation, shuffled, covariance_shuffled, balanced, saliency, fault_balanced]
 # Train and held-out fault severity intervals are disjoint.
 train:
   seed_base: 10000

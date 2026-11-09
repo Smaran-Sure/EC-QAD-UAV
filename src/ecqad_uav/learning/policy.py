@@ -103,7 +103,7 @@ def conditioning_weights(cov, nis, mode, seed=0, labels=None, saliency=None):
         _, inverse, counts = np.unique(labels, return_inverse=True, return_counts=True)
         score = np.log(len(labels)/len(counts)/counts[inverse])
     else:
-        score = z[:,0] if mode=='covariance' else z[:,1] if mode=='innovation' else z.mean(1)
+        score = z[:,0] if mode in ('covariance','covariance_shuffled') else z[:,1] if mode=='innovation' else z.mean(1)
         score = .5*score
     lo, hi = -20., 20.
     for _ in range(70):
@@ -111,7 +111,7 @@ def conditioning_weights(cov, nis, mode, seed=0, labels=None, saliency=None):
         if np.clip(np.exp(score+shift), .5, 2).mean()>1: hi=shift
         else: lo=shift
     weights=np.clip(np.exp(score+(lo+hi)/2), .5, 2).astype(np.float32)
-    if mode=='shuffled':
+    if mode in ('shuffled','covariance_shuffled'):
         weights=np.random.default_rng(seed).permutation(weights)
     return weights, dict(center=center.tolist(), scale=scale.tolist(), mean=float(weights.mean()), minimum=float(weights.min()), maximum=float(weights.max()), log_shift=(lo+hi)/2)
 
