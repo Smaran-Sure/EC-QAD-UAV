@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+from ecqad_uav.control.autopilot import POLICY_INPUT_SCHEMA
 
 
 def fake_quant(x, bits, lo, hi):
@@ -66,11 +67,13 @@ class Policy(nn.Module):
 
     def save(self, path, **metadata):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        torch.save(dict(state=self.state_dict(), bits=self.bits, width=self.width, metadata=metadata), path)
+        torch.save(dict(input_schema=POLICY_INPUT_SCHEMA, state=self.state_dict(), bits=self.bits, width=self.width, metadata=metadata), path)
 
     @classmethod
     def load(cls, path):
         d = torch.load(path, map_location='cpu', weights_only=True)
+        if d.get('input_schema') != POLICY_INPUT_SCHEMA:
+            raise ValueError('Checkpoint policy input schema mismatch; exploratory PID-dependent models cannot be deployed')
         m = cls(d['bits'], d['width']); m.load_state_dict(d['state']); m.eval()
         return m
 

@@ -5,12 +5,13 @@ from pathlib import Path
 import math
 import numpy as np
 
-from ecqad_uav.control.autopilot import CascadedAutopilot, NavState, standard_reference_profile
+from ecqad_uav.control.autopilot import CascadedAutopilot, NavState, standard_reference_profile, policy_features, POLICY_INPUT_SCHEMA
 from ecqad_uav.estimation.ukf import NavigationUKF, BG
 from ecqad_uav.faults.fault_injector import FaultInjector
 from ecqad_uav.plant.jsbsim_plant import JSBSimPlant, ControlCommand
 from ecqad_uav.sensors.sensor_suite import SensorSuite
 from ecqad_uav.utils.logger import RunLogger
+from ecqad_uav.utils.math_utils import angle_error
 
 
 class SimulationRunner:
@@ -69,7 +70,7 @@ class SimulationRunner:
         faults = FaultInjector(self.fault_cfg)
         sensors = SensorSuite(self.sensor_cfg, self.aircraft_cfg["simulation"]["plant_hz"])
         estimator = NavigationUKF(self.estimator_cfg, self.sensor_cfg) if self.estimator_enabled else None
-        autopilot = CascadedAutopilot(self.controller_cfg, trim)
+        autopilot = CascadedAutopilot(self.controller_cfg, trim) if self.policy is None else None
         logger = RunLogger()
         logger.covariances, logger.innovation_records = [], []
         recent_nis = {"gps": 1., "heading": 1., "airspeed": 1.}
@@ -127,12 +128,21 @@ class SimulationRunner:
                             nav = NavState.from_estimator(estimator.x, latest_airspeed, altitude0)
                             rates = estimator.last_imu_gyro - estimator.x[BG]
                             nav.p_rad_s, nav.q_rad_s, nav.r_rad_s = map(float, rates)
-                    conventional, latest_debug = autopilot.update(nav, ref, 1.0 / control_hz)
-                    features = autopilot.features
-                    current_cmd = conventional
-                    if self.policy is not None:
+                    features = policy_features(nav, ref)
+                    latest_debug = dict(cmd_altitude_m=ref.altitude_m,
+                        cmd_heading_rad=ref.heading_rad, cmd_airspeed_mps=ref.airspeed_mps,
+                        err_altitude_m=ref.altitude_m-nav.altitude_m,
+                        err_heading_rad=angle_error(ref.heading_rad,nav.yaw_rad),
+                        err_airspeed_mps=ref.airspeed_mps-nav.airspeed_mps)
+                    if self.policy is None:
+                        conventional, pid_debug = autopilot.update(nav, ref, 1.0/control_hz)
+                        latest_debug.update(pid_debug)
+                        current_cmd = conventional
+                    else:
                         current_cmd = ControlCommand(*map(float, self.policy(features))).clipped()
-                    teacher_action = np.array(list(conventional.__dict__.values())) if self.observer is None else self.observer(features)
+                    teacher_action = (np.array(list(current_cmd.__dict__.values()))
+                        if self.observer is None else self.observer(features))
+
 
             invalid = not all(math.isfinite(v) for v in truth.as_dict().values())
             failed = invalid or truth.altitude_m < 30 or truth.airspeed_mps < 5 or truth.airspeed_mps > 65 or abs(truth.pitch_rad) > 1.2
@@ -142,7 +152,7 @@ class SimulationRunner:
             row = {
                 **{f"feature_{j}": float(v) for j,v in enumerate(features)},
                 **{f"teacher_{j}": float(v) for j,v in enumerate(teacher_action)},
-                **{f"pid_{j}": float(v) for j,v in enumerate(conventional.__dict__.values())},
+                **{f"pid_{j}": float(v) if self.policy is None else np.nan for j,v in enumerate(conventional.__dict__.values())},
                 "nis_normalized_ewma": float(np.mean(list(recent_nis.values()))),
                 "constraint_violation": int(invalid or abs(truth.roll_rad)>math.radians(60) or abs(truth.pitch_rad)>math.radians(30) or truth.airspeed_mps<12 or truth.airspeed_mps>40 or truth.altitude_m<100),
                 **{f"truth_{k0}": v for k0, v in truth.as_dict().items() if k0 != "t"},
@@ -197,6 +207,8 @@ class SimulationRunner:
             truth = plant.step(current_cmd, aileron_effectiveness=fstate.aileron_effectiveness)
 
         metadata = {
+            "policy_input_schema": POLICY_INPUT_SCHEMA,
+            "pid_executed": self.policy is None,
             "completed": completed,
             "actual_duration_s": truth.t,
             "control_mode": self.control_mode,

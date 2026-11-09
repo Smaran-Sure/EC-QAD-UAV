@@ -61,3 +61,7 @@ Large reproducible data and checkpoint artifacts are ignored by Git and retained
 Read `docs/METHOD.md`, `docs/EXPERIMENT_DESIGN.md`, `docs/INITIAL_RESULTS.md`, and `docs/AIAA_AVIATION_SUMMARY.md` for scientific details and executed findings. `docs/WORK_LOG.md` records the flight-baseline repair. H1 (predictive information) and H2 (benefit from weighting) are assessed separately; neither correlation nor a single-seed improvement establishes a general robustness claim.
 
 The original numbered baseline experiments remain available for focused controller/sensor checks; the study command above is the main research path.
+
+## Independent neural deployment
+
+The current `physical_reference_v2` policy consumes only physical estimated navigation and reference commands. PID execution is disabled in neural rollouts. Covariance and NIS affect training weights only. Prior PID-memory-dependent outputs are preserved under `results/archive/v1_pid_dependent_exploratory/`; they are exploratory and are not results for the corrected architecture. The teacher validation gate must pass before new student training/evaluation.

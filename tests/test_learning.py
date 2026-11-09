@@ -46,3 +46,34 @@ def test_fault_balancing_has_equal_class_weight_mass():
     w,_=conditioning_weights(np.zeros(100),np.ones(100),'fault_balanced',labels=labels)
     assert np.isclose(w.mean(),1.)
     for name in np.unique(labels): assert np.isclose(w[labels==name].sum(),25.)
+
+
+def test_policy_interface_is_physical_and_pid_free(monkeypatch):
+    from ecqad_uav.control.autopilot import NavState, GuidanceCommand, policy_features, POLICY_FEATURE_NAMES
+    import ecqad_uav.sim.runner as runner
+    from ecqad_uav.utils.config import load_yaml
+    assert POLICY_FEATURE_NAMES == ('altitude_error','heading_error','airspeed_error','roll','pitch',
+        'body_p','body_q','body_r','altitude','airspeed','sin_heading','cos_heading',
+        'reference_altitude','reference_airspeed','sin_reference_heading','cos_reference_heading')
+    nav=NavState(300,25,.1,.02,.3,.01,.02,.03)
+    ref=GuidanceCommand(320,.4,28)
+    expected=np.array([20/30,.1/.5,3/5,.1/.5,.02/.2,.01,.02,.03/.5,1,25/30,
+        np.sin(.3),np.cos(.3),320/300,28/30,np.sin(.4),np.cos(.4)],dtype=np.float32)
+    np.testing.assert_allclose(policy_features(nav,ref),expected,atol=1e-7)
+    def forbidden(*args,**kwargs):
+        raise AssertionError('PID construction forbidden during neural deployment')
+    monkeypatch.setattr(runner,'CascadedAutopilot',forbidden)
+    configs=[load_yaml(n+'.yaml') for n in ['aircraft','sensors','estimator','controller','faults']]
+    for bits in (32,8,4,2):
+        policy=Policy(bits).numpy_policy()
+        log,meta=runner.SimulationRunner(*configs,control_mode='estimated_pid',policy=policy,duration_s=.1).run()
+        assert meta['pid_executed'] is False
+        assert log.dataframe()[[f'pid_{i}' for i in range(4)]].isna().all().all()
+
+
+def test_rejects_unversioned_exploratory_checkpoint(tmp_path):
+    path=tmp_path/'old.pt'; model=Policy()
+    torch.save(dict(state=model.state_dict(),bits=32,width=32),path)
+    import pytest
+    with pytest.raises(ValueError,match='schema mismatch'):
+        Policy.load(path)

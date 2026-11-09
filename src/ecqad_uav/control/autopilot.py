@@ -54,6 +54,30 @@ class NavState:
         )
 
 
+POLICY_INPUT_SCHEMA = "physical_reference_v2"
+POLICY_FEATURE_NAMES = (
+    "altitude_error", "heading_error", "airspeed_error", "roll", "pitch",
+    "body_p", "body_q", "body_r", "altitude", "airspeed",
+    "sin_heading", "cos_heading", "reference_altitude", "reference_airspeed",
+    "sin_reference_heading", "cos_reference_heading",
+)
+
+
+def policy_features(nav: NavState, ref: GuidanceCommand) -> np.ndarray:
+    """Memoryless deployed interface: physical navigation and commands only."""
+    return np.asarray([
+        (ref.altitude_m-nav.altitude_m)/30,
+        angle_error(ref.heading_rad, nav.yaw_rad)/.5,
+        (ref.airspeed_mps-nav.airspeed_mps)/5,
+        nav.roll_rad/.5, nav.pitch_rad/.2,
+        nav.p_rad_s, nav.q_rad_s, nav.r_rad_s/.5,
+        nav.altitude_m/300, nav.airspeed_mps/30,
+        math.sin(nav.yaw_rad), math.cos(nav.yaw_rad),
+        ref.altitude_m/300, ref.airspeed_mps/30,
+        math.sin(ref.heading_rad), math.cos(ref.heading_rad),
+    ], dtype=np.float32)
+
+
 class CascadedAutopilot:
     def __init__(self, cfg: dict, trim: ControlCommand):
         self.cfg = cfg
@@ -100,17 +124,6 @@ class CascadedAutopilot:
             throttle=self.trim.throttle + throttle_delta,
         ).clipped()
 
-        # Deployment features contain navigation, references and deterministic
-        # controller memory only; no truth, covariance, NIS or fault labels.
-        self.features = np.array([
-            h_err/30, psi_err/.5, v_err/5,
-            nav.roll_rad/.5, nav.pitch_rad/.2,
-            nav.p_rad_s, nav.q_rad_s, nav.r_rad_s/.5,
-            self.heading.integral/.35, self.altitude.integral/100,
-            self.roll.integral/.5, self.pitch.integral/.5, self.airspeed.integral/20,
-            self.heading.last_derivative, self.altitude.last_derivative/10,
-            self.airspeed.last_derivative/10,
-        ], dtype=np.float32)
         dbg = {
             "cmd_altitude_m": ref.altitude_m,
             "cmd_heading_rad": ref.heading_rad,

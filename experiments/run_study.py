@@ -93,7 +93,7 @@ def rollout(job):
     metrics['saturation_fraction']=float(saturation.mean())
     metrics['max_saturation_duration_s']=float(lengths.max()/CFG['log_hz']) if len(lengths) else 0.
     metrics['action_rmse']=float(np.sqrt(np.mean(np.square(action-target))))
-    result={**meta,**metrics,'method':method,'bits':bits,'training_seed':train_seed}
+    result={**meta,**metrics,'policy_input_schema':runmeta['policy_input_schema'],'pid_executed':runmeta['pid_executed'],'method':method,'bits':bits,'training_seed':train_seed}
     ident=f'{method}_{bits}_seed{train_seed}_{condition}_{episode:03d}'
     if split in ['train','validation']:
         path=OUT/'data'/split/f'{condition}_{episode:03d}.npz'

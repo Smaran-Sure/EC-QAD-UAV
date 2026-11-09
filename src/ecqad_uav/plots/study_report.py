@@ -70,7 +70,7 @@ def plot_baselines():
 
 def architecture():
     fig,ax=plt.subplots(figsize=(9,3.8)); ax.axis('off'); ax.set_xlim(0,1); ax.set_ylim(0,1)
-    blocks=[(.08,.74,'Nonlinear\n6-DoF UAV'),(.32,.74,'Simulated\nsensors'),(.56,.74,'Navigation UKF\nx̂, P, ν, S, NIS'),(.84,.74,'Flight policy\nsame navigation, reference\nand memory inputs'),(.25,.24,'Frozen FP32\nteacher'),(.56,.24,'Weighted action\nmatching loss'),(.84,.24,'Quantized student\n8 / 4 / 2 bit')]
+    blocks=[(.08,.74,'Nonlinear\n6-DoF UAV'),(.32,.74,'Simulated\nsensors'),(.56,.74,'Navigation UKF\nx̂, P, ν, S, NIS'),(.84,.74,'Flight policy\nphysical state + reference\n(no PID memory)'),(.25,.24,'Frozen FP32\nteacher'),(.56,.24,'Weighted action\nmatching loss'),(.84,.24,'Quantized student\n8 / 4 / 2 bit')]
     for x,y,label in blocks:
         ax.text(x,y,label,ha='center',va='center',fontsize=9,bbox=dict(boxstyle='round,pad=.45',fc='white',ec='.3'))
     arrows=[((.16,.74),(.25,.74)),((.39,.74),(.45,.74)),((.67,.74),(.71,.74)),((.34,.24),(.45,.24)),((.67,.24),(.74,.24)),((.84,.36),(.84,.62))]
@@ -248,7 +248,7 @@ def write_results_docs(d):
     if (OUT/'signal_analysis.csv').exists():
         signal=pd.read_csv(OUT/'signal_analysis.csv'); g=signal[(signal.bits==4)&(signal.condition=='conditional_episode_cv')]
         conditional=' '.join(f"For 4-bit uniform QAD, adding covariance/NIS changed held-out prediction MSE for {r.target} by {-100*r.relative_mse_reduction:+.2f}% beyond fault labels, time, attitude magnitudes, current tracking severity, training-seed indicators and teacher-Jacobian sensitivity." for r in g.itertuples())
-    limitations='The aircraft has approximate public BETA aerodynamics; sensors and faults are synthetic; flight is still-air; the teacher imitates a conventional controller with shared error-memory preprocessing. Quantization is simulated, and no hardware latency, energy or speedup was measured. Two-bit prefix RMSE can look deceptively favorable when an episode terminates: use failures and the penalized score. Correlations and conditional prediction do not establish causal compression criticality. A small number of training seeds limits inference about optimization variability.'
+    limitations='The aircraft has approximate public BETA aerodynamics; sensors and faults are synthetic; flight is still-air; the teacher imitates a conventional controller using a memoryless physical-state/reference interface. Quantization is simulated, and no hardware latency, energy or speedup was measured. Two-bit prefix RMSE can look deceptively favorable when an episode terminates: use failures and the penalized score. Correlations and conditional prediction do not establish causal compression criticality. A small number of training seeds limits inference about optimization variability.'
     text=f'''# Executed EC-QAD results
 
 This report is generated from `results/per_episode_metrics.csv`; it contains {complete} executed rollouts across training seeds {seeds}. Unique randomized scenario seeds per condition: {unique_scenarios}. Scenarios are shared across methods and training seeds. Counts below identify the actual scope, rather than the planned scope. The prior spherical-coordinate experiment is quarantined under `results/archive/v0_spherical_coordinate_bug/` and is excluded here.
