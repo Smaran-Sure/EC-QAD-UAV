@@ -1,0 +1,3 @@
+# Frozen corrected EC-QAD-v1 study
+
+The existing `ecqad` method is EC-QAD-v1 (combined covariance and NIS). `shuffled` permutes its combined weights; it is not the covariance-only shuffled control. This snapshot preserves the complete 640-rollout seed-7 main comparison and 480 weighting-control rollouts before the next scientific diagnosis. Checkpoint/data/model hashes and the committed source revision are recorded in study_manifest.json. The hashed large artifacts remain at their original paths and must not be overwritten. PID-dependent results remain archived and excluded. No deployed input, weighting formula, or checkpoint was changed by this freeze.

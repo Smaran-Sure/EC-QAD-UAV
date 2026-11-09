@@ -1,0 +1,36 @@
+# Frozen before EC-QAD evaluation. Splits are whole independent trajectories.
+seed: 20261108
+teacher_seed: 7  # One validated, frozen teacher shared by all student seeds.
+training_seeds: [7, 19, 43]
+conditions: [nominal, gyro_bias, gps_dropout, airspeed_bias]
+train_episodes_per_condition: 8
+validation_episodes_per_condition: 2
+evaluation_episodes_per_condition: 20
+duration_s: 180
+log_hz: 20
+width: 32
+teacher_epochs: 180
+student_epochs: 100
+batch_size: 1024
+learning_rate: 0.001
+bits: [8, 4, 2]
+methods: [uniform, ecqad, covariance, innovation, shuffled, balanced, saliency, fault_balanced]
+# Train and held-out fault severity intervals are disjoint.
+train:
+  seed_base: 10000
+  onset: [45, 65]
+  gyro_deg_s: [0.2, 0.5]
+  dropout_s: [8, 15]
+  airspeed_mps: [0.5, 1.5]
+validation:
+  seed_base: 20000
+  onset: [68, 78]
+  gyro_deg_s: [0.5, 0.65]
+  dropout_s: [15, 18]
+  airspeed_mps: [1.5, 2.0]
+evaluation:
+  seed_base: 30000
+  onset: [80, 105]
+  gyro_deg_s: [0.65, 1.0]
+  dropout_s: [18, 25]
+  airspeed_mps: [2.0, 3.0]
