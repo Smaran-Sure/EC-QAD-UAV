@@ -42,3 +42,7 @@ H2 uses common-scenario paired differences between EC-QAD and uniform QAD at equ
 The first result is preserved before extending the training-seed count. Extensions should not change the aircraft, data splits, weighting function or tuning budget in response to a preferred evaluation outcome.
 
 The conditional regression is a restricted predictive comparison, not an information-theoretic result: for a fixed deterministic teacher/student, pointwise action discrepancy is itself a function of policy inputs. Incremental covariance/NIS prediction relative to a limited regression baseline should not be interpreted as information unavailable to an arbitrarily expressive model of the full policy input.
+
+## Corrected deployment architecture gates
+
+All v1 PID-memory-dependent outputs are exploratory and archived. The v2 MLP receives only the named physical-state/reference feature vector. Before compression evaluation, the independent teacher must complete eight held-out 180-second validation episodes without failure and with mean normalized tracking score at most 1.5 times the PID baseline. Runtime metadata must show no PID execution. The student deployment gate runs all six uniform/EC-QAD bit-width variants with this identical interface; low-bit flight failures are reported as findings, not hidden by the interface gate. Tests forbid PID construction in neural deployment and reject old-schema checkpoints.

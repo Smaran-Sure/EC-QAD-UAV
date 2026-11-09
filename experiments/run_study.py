@@ -227,7 +227,7 @@ def evaluate(seed,workers,episodes,ablations,tag="",methods=None):
 
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument('stage',choices=['collect','teacher','teacher_gate','students','evaluate','report']); p.add_argument('--seed',type=int,default=7); p.add_argument('--workers',type=int,default=4); p.add_argument('--episodes',type=int,default=20); p.add_argument('--ablations',action='store_true'); p.add_argument('--tag',default=''); p.add_argument('--methods',default=None); args=p.parse_args()
+    p=argparse.ArgumentParser(); p.add_argument('stage',choices=['collect','teacher','teacher_gate','deployment_gate','students','evaluate','report']); p.add_argument('--seed',type=int,default=7); p.add_argument('--workers',type=int,default=4); p.add_argument('--episodes',type=int,default=20); p.add_argument('--ablations',action='store_true'); p.add_argument('--tag',default=''); p.add_argument('--methods',default=None); args=p.parse_args()
     OUT.mkdir(exist_ok=True)
     if args.stage=='collect': collect(args.workers)
     elif args.stage=='teacher': train(args.seed)
@@ -237,9 +237,21 @@ def main():
         with ProcessPoolExecutor(max_workers=args.workers) as pool: rows=list(pool.map(rollout,jobs))
         result=pd.DataFrame(rows); result.to_csv(OUT/f'teacher_validation_seed{args.seed}.csv',index=False)
         base=pd.read_csv(OUT/'conventional_metrics.csv'); base=base[base.split=='validation']
+        if result.pid_executed.any() or set(result.policy_input_schema)!={'physical_reference_v2'}:
+            raise RuntimeError('Neural deployment interface gate failed')
         ratio=result.tracking_score.mean()/base.tracking_score.mean()
         print('teacher validation score ratio to PID',ratio,'failures',result.failed.sum(),flush=True)
         if result.failed.sum() or ratio>1.5: raise RuntimeError('Teacher closed-loop validation gate failed')
+    elif args.stage=='deployment_gate':
+        ck=OUT/'checkpoints'/f'seed{args.seed}'
+        jobs=[('validation_policy','nominal',0,str(ck/f'{m}_{b}.pt'),str(ck/'teacher.pt'),m,b,args.seed,False)
+              for m in ('uniform','ecqad') for b in CFG['bits']]
+        with ProcessPoolExecutor(max_workers=args.workers) as pool: rows=list(pool.map(rollout,jobs))
+        result=pd.DataFrame(rows)
+        result.to_csv(OUT/f'deployment_validation_seed{args.seed}.csv',index=False)
+        if result.pid_executed.any() or set(result.policy_input_schema)!={'physical_reference_v2'}:
+            raise RuntimeError('Student deployment interface gate failed')
+        print(result[['method','bits','completed_s','failed','tracking_score']].to_string(index=False),flush=True)
     elif args.stage=='students': train(args.seed,True,args.ablations)
     elif args.stage=='evaluate': evaluate(args.seed,args.workers,args.episodes,args.ablations,args.tag,args.methods)
     else:

@@ -8,5 +8,6 @@ PYTHON=${PYTHON:-.venv/bin/python}
 "$PYTHON" experiments/run_study.py teacher --seed 7
 "$PYTHON" experiments/run_study.py teacher_gate --seed 7 --workers 4
 "$PYTHON" experiments/run_study.py students --seed 7
+"$PYTHON" experiments/run_study.py deployment_gate --seed 7 --workers 4
 "$PYTHON" experiments/run_study.py evaluate --seed 7 --episodes 20 --workers 4
 "$PYTHON" experiments/run_study.py report
