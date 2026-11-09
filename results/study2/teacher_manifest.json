@@ -1,0 +1,31 @@
+{
+  "primary_teacher_seed": 7,
+  "accepted_seeds": [
+    7,
+    19
+  ],
+  "rejected_seeds": [
+    43
+  ],
+  "rule": "first passing in preregistered seed order",
+  "sha256": {
+    "results/study2/checkpoints/seed19/teacher_epoch120.pt": "b11c0a3b26e39ab2f90e184a333eec125b0cbc7ce73d58384a649b4a24c68c84",
+    "results/study2/checkpoints/seed19/teacher_resume.pt": "86ca791f333ac8fe64f47a61329bc5749fb1fd1307238218f52837baf804b182",
+    "results/study2/checkpoints/seed19/teacher.pt": "91d373f1dde61e76c57226385158a69b7eccc2b6232a423addd34793a1546297",
+    "results/study2/checkpoints/seed19/teacher_epoch60.pt": "cbbd7880ef3080cc6c2a42cbdf3bffc4f4561b300f94d6cc6d4575f0784e4d6a",
+    "results/study2/checkpoints/seed19/teacher_epoch180.pt": "91d373f1dde61e76c57226385158a69b7eccc2b6232a423addd34793a1546297",
+    "results/study2/checkpoints/seed43/teacher_epoch120.pt": "6a10ae547eb7285d58399c8bbc035b5c52332da82e0ff901abe67fe08c30b45b",
+    "results/study2/checkpoints/seed43/teacher_resume.pt": "1f31e53d1ae3d1df7fcba2a105a0de414133180e3f4323e19104a626e0972663",
+    "results/study2/checkpoints/seed43/teacher.pt": "f6d7e5c0bc39dc3ec55f119aa42838d4d2b311b6fad6cddec3014d1b572ca0af",
+    "results/study2/checkpoints/seed43/teacher_epoch60.pt": "f6d7e5c0bc39dc3ec55f119aa42838d4d2b311b6fad6cddec3014d1b572ca0af",
+    "results/study2/checkpoints/seed43/teacher_epoch180.pt": "fccaa02f7cfeddfc9f604710614ef9af09d57d4529e01bd1ae4a57cceee15087",
+    "results/study2/checkpoints/seed7/teacher_epoch120.pt": "ee4f0d34cb2e3be832dabc72d45a975cfc6adcc735a8e7eca93e7053597da579",
+    "results/study2/checkpoints/seed7/teacher_resume.pt": "d9c6369e2341f3b6932f0562a7c7b6fcc0382d421a4e3ba50d870d42de3783b7",
+    "results/study2/checkpoints/seed7/teacher.pt": "ee4f0d34cb2e3be832dabc72d45a975cfc6adcc735a8e7eca93e7053597da579",
+    "results/study2/checkpoints/seed7/teacher_epoch60.pt": "d9ea20fcbfa3981773ec848b35076aa1e77d0e338675923aa1824591cd9d9574",
+    "results/study2/checkpoints/seed7/teacher_epoch180.pt": "aeb67067285eefbc7766f5656656eaf6daa7299c00afc80e79d1ed0d8431d326",
+    "results/study2_teacher_gate.csv": "6f1f3b8934d1c66a4d6443244b8192bb222802f777c45438d3f94b8088a329d2",
+    "results/study2/primary_teacher.json": "88689eb14cbf8058104d2acbb17be4362c85c006a7fe1f50700b275644e65dab",
+    "results/study2/protocol_manifest.json": "b5fab1e7e1a93107389060e60151e810a2abd7a68af705be592ed10f8e9ad65e"
+  }
+}

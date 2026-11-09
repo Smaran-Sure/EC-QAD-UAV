@@ -1,0 +1,5 @@
+{
+  "seed": 7,
+  "path": "/Users/kumarisure/Repos/EC-QAD-UAV/results/study2/checkpoints/seed7/teacher.pt",
+  "rule": "first_passing_in_declared_order"
+}
