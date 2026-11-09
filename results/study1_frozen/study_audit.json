@@ -1,0 +1,20 @@
+{
+  "expected_rollouts": 3280,
+  "actual_rollouts": 3280,
+  "missing_required_rollouts": 0,
+  "complete": true,
+  "unique_scenarios": 80,
+  "student_training_seeds": [
+    7,
+    19,
+    43
+  ],
+  "teacher_seed": 7,
+  "duplicate_keys": 0,
+  "paired_scenarios_identical": true,
+  "neural_pid_execution": false,
+  "frozen_preservation_checked": true,
+  "policy_interface_and_class_unchanged": true,
+  "unchanged_frozen_artifacts": 89,
+  "missing_examples": []
+}

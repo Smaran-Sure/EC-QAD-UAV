@@ -1,0 +1,63 @@
+# Study 2 protocol: freeze before teacher/student or signal outcomes.
+name: study2
+teacher_seeds: [7, 19, 43]
+student_seeds: [7, 19, 43, 61, 89]
+conditions: [nominal, gyro_bias, gps_dropout, airspeed_bias]
+duration_s: 180
+log_hz: 25  # Every logged tick is also a 50 Hz control tick: feature/P alignment.
+width: 32
+bits: 4
+teacher_epochs: 180
+teacher_candidates: [60, 120, 180]
+student_epochs: 100
+student_candidates: [25, 50, 75, 100]
+batch_size: 1024
+learning_rate: 0.001
+teacher_gate_ratio: 1.5  # Both nominal and off-nominal separately; zero failures.
+primary_teacher: first_passing_in_declared_order
+train:
+  seed_base: 110000
+  episodes_per_condition: 8
+  onset: [45, 65]
+  gyro_deg_s: [0.2, 0.5]
+  dropout_s: [8, 15]
+  airspeed_mps: [0.5, 1.5]
+validation_select:
+  seed_base: 120000
+  episodes_per_condition: 1
+  onset: [68, 78]
+  gyro_deg_s: [0.5, 0.65]
+  dropout_s: [15, 18]
+  airspeed_mps: [1.5, 2.0]
+validation_gate:
+  seed_base: 130000
+  episodes_per_condition: 2
+  onset: [68, 78]
+  gyro_deg_s: [0.5, 0.65]
+  dropout_s: [15, 18]
+  airspeed_mps: [1.5, 2.0]
+validation_signal:
+  seed_base: 140000
+  episodes_per_condition: 20
+  onset: [68, 78]
+  gyro_deg_s: [0.5, 0.65]
+  dropout_s: [15, 18]
+  airspeed_mps: [1.5, 2.0]
+test:
+  seed_base: 150000
+  episodes_per_condition: 20
+  onset: [80, 105]
+  gyro_deg_s: [0.65, 1.0]
+  dropout_s: [18, 25]
+  airspeed_mps: [2.0, 3.0]
+signal:
+  horizon_s: 5
+  folds: 5
+  ridge: 0.000001
+  bootstrap_draws: 2000
+  bootstrap_seed: 20261109
+  primary_targets: [future_tracking, excess_future_tracking]
+  # Bonferroni: 97.5% two-sided interval for each of two primary targets.
+  interval_quantiles: [0.0125, 0.9875]
+  required_positive_seeds: 4
+  gate: incremental_q_beyond_covariance_and_sensitivity_lower_bound_positive

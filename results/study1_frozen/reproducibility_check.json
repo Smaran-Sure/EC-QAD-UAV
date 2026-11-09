@@ -1,0 +1,19 @@
+{
+  "method": "ecqad",
+  "bits": 4,
+  "student_seed": 7,
+  "teacher_seed": 7,
+  "condition": "gps_dropout",
+  "episode": 0,
+  "metric_differences": {
+    "tracking_score": 0.0,
+    "altitude_rmse_m": 0.0,
+    "heading_rmse_deg": 0.0,
+    "airspeed_rmse_mps": 0.0,
+    "control_effort": 0.0,
+    "action_rmse": 0.0,
+    "failed": 0.0
+  },
+  "pid_executed": false,
+  "input_schema": "physical_reference_v2"
+}
